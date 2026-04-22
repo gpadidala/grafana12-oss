@@ -1,0 +1,11 @@
+apiVersion: 1
+contactPoints:
+  - orgId: 1
+    name: slack-oncall
+    receivers:
+      - uid: slack-oncall
+        type: slack
+        settings:
+          url: "$__file{/etc/secrets/oidc/slack_webhook}"   # actually mounted via ESO; path example only
+          title: "[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}"
+          text: "{{ range .Alerts }}- {{ .Labels.instance }} :: {{ .Annotations.summary }}\n{{ end }}"

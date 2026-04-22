@@ -1,0 +1,45 @@
+# direnv template — copy to .envrc and fill. NEVER commit .envrc with real values.
+
+# --- target Grafana (11.6.4 during audit, 12.4.x post-cutover) ---
+export GRAFANA_URL="https://grafana.example.internal"
+export GRAFANA_SA_TOKEN=""             # service account token (read-only for audit)
+export GRAFANA_ORG_ID="1"
+
+# --- target image pin (resolved at audit; never 'latest', never minor-only) ---
+export GRAFANA_IMAGE_REPO="grafana/grafana-oss"
+export GRAFANA_IMAGE_TAG=""            # e.g. 12.4.3 — fill from resolver
+export HELM_CHART_VERSION=""           # e.g. 9.x.x — fill from `helm search repo`
+
+# --- clusters ---
+export AKS_CONTEXT=""
+export GKE_CONTEXT=""
+export K8S_NAMESPACE="grafana"
+
+# --- Postgres (external managed) ---
+export PG_SECRET_NAME=""               # ESO ExternalSecret name
+export PG_HOST=""
+export PG_DB="grafana"
+
+# --- Redis remote cache ---
+export REDIS_HOST=""
+export REDIS_TLS="true"
+
+# --- OIDC (Azure AD / Google) ---
+export OIDC_PROVIDER=""                # azure_ad | google
+export OIDC_CLIENT_ID_SECRET=""
+export OIDC_CLIENT_SECRET_SECRET=""
+
+# --- Git Sync ---
+export GITSYNC_REPO_URL=""             # e.g. https://github.com/org/grafana-dashboards-prod
+export GITSYNC_BRANCH="main"
+export GITSYNC_AUTH="github-app"       # github-app | pat
+export GITHUB_APP_ID_SECRET=""
+export GITHUB_APP_PRIVATE_KEY_SECRET=""
+
+# --- Notifications ---
+export SLACK_WEBHOOK_SECRET=""
+export PUSHGATEWAY_URL=""
+
+# --- Behavior flags ---
+export CONFIRM=""                      # set to "yes" to arm destructive ops
+export DRY_RUN="true"

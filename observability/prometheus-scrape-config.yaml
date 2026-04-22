@@ -1,0 +1,28 @@
+# Prometheus scrape config for Grafana 12.4.
+# Note §4 row #8: 12.4 changed the HA Alertmanager cluster metric prefix.
+# This config drops the legacy prefix and keeps the new one.
+
+scrape_configs:
+  - job_name: grafana
+    metrics_path: /metrics
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces: { names: [grafana] }
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+        action: keep
+        regex: grafana
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+    metric_relabel_configs:
+      # Legacy cache_size metric was deprecated (split into two in 12; removal in 13).
+      - source_labels: [__name__]
+        regex: grafana_cache_size.*
+        action: drop
+      # 12.4 HA Alertmanager cluster metric rename — relabel old prefix to new for dashboard continuity.
+      - source_labels: [__name__]
+        regex: alertmanager_cluster_(.*)
+        target_label: __name__
+        replacement: grafana_alerting_ha_$1

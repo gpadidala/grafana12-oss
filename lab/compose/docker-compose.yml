@@ -1,0 +1,187 @@
+name: grafana12-oss-lab
+
+# Port policy (avoid collision with grafana13-lab which owns 3000 / 9090 / 3100 / 3200 / 4040 / 4317-8):
+#   Grafana UI      : 3012
+#   Prometheus UI   : 9092
+#   Loki API        : 3112
+#   Tempo API       : 3212
+#   Pyroscope UI    : 4042
+#   Alloy UI        : 12346
+# Internal service-to-service ports stay at defaults. All configs are baked into
+# per-service Dockerfiles to avoid Docker Desktop /Volumes/ bind-mount issues on macOS.
+
+services:
+  postgres:
+    image: postgres:${POSTGRES_TAG}
+    container_name: grafana12_postgres
+    environment:
+      POSTGRES_USER: ${GF_DATABASE_USER}
+      POSTGRES_PASSWORD: ${GF_DATABASE_PASSWORD}
+      POSTGRES_DB: ${GF_DATABASE_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${GF_DATABASE_USER} -d ${GF_DATABASE_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  renderer:
+    image: grafana/grafana-image-renderer:${GRAFANA_RENDERER_TAG}
+    container_name: grafana12_renderer
+    environment:
+      ENABLE_METRICS: "true"
+      AUTH_TOKEN: ${RENDERER_AUTH_TOKEN}
+    restart: unless-stopped
+
+  prometheus:
+    build:
+      context: ../prometheus
+      dockerfile: Dockerfile
+      args:
+        PROMETHEUS_TAG: ${PROMETHEUS_TAG}
+    image: grafana12-oss-lab/prometheus:${PROMETHEUS_TAG}
+    container_name: grafana12_prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+      - --enable-feature=native-histograms
+    ports:
+      - "9092:9090"
+    volumes:
+      - promdata:/prometheus
+    restart: unless-stopped
+
+  loki:
+    build:
+      context: ../loki
+      dockerfile: Dockerfile
+      args:
+        LOKI_TAG: ${LOKI_TAG}
+    image: grafana12-oss-lab/loki:${LOKI_TAG}
+    container_name: grafana12_loki
+    command: -config.file=/etc/loki/loki-config.yaml
+    ports:
+      - "3112:3100"
+    volumes:
+      - lokidata:/loki
+    restart: unless-stopped
+
+  tempo:
+    build:
+      context: ../tempo
+      dockerfile: Dockerfile
+      args:
+        TEMPO_TAG: ${TEMPO_TAG}
+    image: grafana12-oss-lab/tempo:${TEMPO_TAG}
+    container_name: grafana12_tempo
+    command: ["-config.file=/etc/tempo/tempo-config.yaml"]
+    ports:
+      - "3212:3200"
+    volumes:
+      - tempodata:/var/tempo
+    restart: unless-stopped
+
+  pyroscope:
+    build:
+      context: ../pyroscope
+      dockerfile: Dockerfile
+      args:
+        PYROSCOPE_TAG: ${PYROSCOPE_TAG}
+    image: grafana12-oss-lab/pyroscope:${PYROSCOPE_TAG}
+    container_name: grafana12_pyroscope
+    command: ["server", "--config.file=/etc/pyroscope/pyroscope-config.yaml"]
+    ports:
+      - "4042:4040"
+    volumes:
+      - pyroscopedata:/data
+    restart: unless-stopped
+
+  alloy:
+    build:
+      context: ../alloy
+      dockerfile: Dockerfile
+      args:
+        ALLOY_TAG: ${ALLOY_TAG}
+    image: grafana12-oss-lab/alloy:${ALLOY_TAG}
+    container_name: grafana12_alloy
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    ports:
+      - "12346:12345"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloydata:/var/lib/alloy/data
+    depends_on: [prometheus, loki, tempo]
+    restart: unless-stopped
+
+  grafana:
+    build:
+      context: ../grafana
+      dockerfile: Dockerfile
+      args:
+        GRAFANA_IMAGE_TAG: ${GRAFANA_IMAGE_TAG}
+    image: grafana12-oss-lab/grafana:${GRAFANA_IMAGE_TAG}
+    container_name: grafana12_grafana
+    depends_on:
+      postgres:
+        condition: service_healthy
+      renderer:
+        condition: service_started
+      prometheus:
+        condition: service_started
+      loki:
+        condition: service_started
+      tempo:
+        condition: service_started
+      pyroscope:
+        condition: service_started
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+      GF_SECURITY_SECRET_KEY: ${GF_SECURITY_SECRET_KEY}
+      GF_SERVER_ROOT_URL: ${GF_SERVER_ROOT_URL}
+      GF_SERVER_DOMAIN: ${GF_SERVER_DOMAIN}
+      GF_AUTH_ANONYMOUS_ENABLED: ${GF_AUTH_ANONYMOUS_ENABLED}
+      GF_USERS_ALLOW_SIGN_UP: ${GF_USERS_ALLOW_SIGN_UP}
+      GF_DATABASE_TYPE: ${GF_DATABASE_TYPE}
+      GF_DATABASE_HOST: ${GF_DATABASE_HOST}
+      GF_DATABASE_NAME: ${GF_DATABASE_NAME}
+      GF_DATABASE_USER: ${GF_DATABASE_USER}
+      GF_DATABASE_PASSWORD: ${GF_DATABASE_PASSWORD}
+      GF_RENDERING_SERVER_URL: ${GF_RENDERING_SERVER_URL}
+      GF_RENDERING_CALLBACK_URL: ${GF_RENDERING_CALLBACK_URL}
+      GF_LOG_MODE: ${GF_LOG_MODE}
+      GF_LOG_LEVEL: ${GF_LOG_LEVEL}
+      GF_LOG_FORMAT: ${GF_LOG_FORMAT}
+      GF_FEATURE_TOGGLES_ENABLE: ${GF_FEATURE_TOGGLES_ENABLE}
+      GF_PLUGINS_ANGULAR_SUPPORT_ENABLED: ${GF_PLUGINS_ANGULAR_SUPPORT_ENABLED}
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ${GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS}
+      GF_DASHBOARDS_MIN_REFRESH_INTERVAL: ${GF_DASHBOARDS_MIN_REFRESH_INTERVAL}
+      GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED}
+      GF_INSTALL_PLUGINS: ""
+    ports:
+      - "3012:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health | grep -q '\"database\":\"ok\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  grafana_data:
+  promdata:
+  lokidata:
+  tempodata:
+  pyroscopedata:
+  alloydata:

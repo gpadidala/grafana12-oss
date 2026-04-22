@@ -1,0 +1,56 @@
+// Alloy pipeline: scrape local containers + self-metrics, ship to Prom/Loki/Tempo/Pyroscope
+// so the feature-demo dashboards have live data.
+
+logging {
+  level  = "info"
+  format = "json"
+}
+
+// ---------- metrics: remote_write to Prometheus ----------
+prometheus.remote_write "default" {
+  endpoint {
+    url = "http://prometheus:9090/api/v1/write"
+  }
+}
+
+prometheus.scrape "self" {
+  targets    = [{"__address__" = "localhost:12345", "job" = "alloy"}]
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.scrape "grafana" {
+  targets    = [{"__address__" = "grafana:3000", "job" = "grafana"}]
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+// ---------- logs: docker logs → Loki ----------
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.docker.containers.targets
+  forward_to = [loki.write.default.receiver]
+  labels     = { source = "docker" }
+}
+
+loki.write "default" {
+  endpoint { url = "http://loki:3100/loki/api/v1/push" }
+}
+
+// ---------- traces: OTLP → Tempo ----------
+otelcol.receiver.otlp "default" {
+  grpc { endpoint = "0.0.0.0:4317" }
+  http { endpoint = "0.0.0.0:4318" }
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+    tls { insecure = true }
+  }
+}

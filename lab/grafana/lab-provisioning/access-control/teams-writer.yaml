@@ -1,0 +1,8 @@
+# Remediation for §4 row #4 — editors_can_admin was removed in 12.0.
+# Grant the `fixed:teams:writer` role to specific users/teams that still need to create teams.
+apiVersion: 1
+roles: []
+assignments:
+  - orgId: 1
+    role: "fixed:teams:writer"
+    teams: [ "sre", "platform" ]

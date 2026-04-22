@@ -1,0 +1,59 @@
+# Secrets / local envs — never committed
+.env
+.envrc
+**/.env
+!**/.env.example
+!**/.envrc.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+.secrets/
+
+# Run artifacts
+out/
+*.log
+*.tgz
+*.tar.gz
+*.sql.gz
+
+# Angular rewrites land in migration/ — treat as generated
+migration/angular-rewrites/
+migration/angular-manual-review.md
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Node (Playwright e2e)
+validation/e2e/node_modules/
+validation/e2e/playwright-report/
+validation/e2e/test-results/
+validation/e2e/playwright-report.json
+**/node_modules/
+
+# Terraform state (never commit)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Docker
+.docker/
+
+# Lab overrides
+lab/compose/docker-compose.override.yml
+lab/compose/docker-compose.override.yml.disabled

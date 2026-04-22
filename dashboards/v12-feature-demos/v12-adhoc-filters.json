@@ -1,0 +1,93 @@
+{
+  "description": "v12.2 Ad-hoc Filters",
+  "editable": true,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "up{job=\"grafana\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "v12.2 Ad-hoc Filters",
+      "type": "stat"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 40,
+  "tags": [
+    "v12-migration",
+    "feature-demo"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "Prometheus",
+          "value": "prom"
+        },
+        "hide": 0,
+        "name": "datasource",
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "_requiresToggle": "multiVariableProperties",
+        "includeAll": true,
+        "multi": true,
+        "name": "env",
+        "options": [
+          {
+            "text": "dev",
+            "value": "dev"
+          },
+          {
+            "text": "development",
+            "value": "dev"
+          },
+          {
+            "text": "prod",
+            "value": "prod"
+          },
+          {
+            "text": "production",
+            "value": "prod"
+          }
+        ],
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "title": "v12.2 Ad-hoc Filters",
+  "uid": "v12-adhoc-filters",
+  "version": 1
+}

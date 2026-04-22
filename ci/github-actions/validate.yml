@@ -1,0 +1,37 @@
+name: validate
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'dashboards/**'
+      - 'provisioning/**'
+      - 'helm/**'
+      - 'validation/**'
+      - 'migration/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install requests Pillow
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Install Playwright
+        run: |
+          cd validation/e2e
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: E2E (smoke)
+        env:
+          GRAFANA_URL: ${{ secrets.GRAFANA_URL_STAGING }}
+          GRAFANA_SA_TOKEN: ${{ secrets.GRAFANA_SA_TOKEN_STAGING }}
+        run: |
+          mkdir -p out/$GITHUB_RUN_ID
+          RUN_ID=$GITHUB_RUN_ID make e2e
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-out
+          path: out/

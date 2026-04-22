@@ -1,0 +1,16 @@
+{
+  "name": "grafana12-oss-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Playwright end-to-end specs for Grafana 12.4.x feature coverage.",
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:ui": "playwright test --ui",
+    "install-browsers": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.47.2",
+    "typescript": "5.5.4"
+  }
+}

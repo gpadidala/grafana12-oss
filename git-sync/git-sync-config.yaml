@@ -1,0 +1,36 @@
+# Git Sync configuration. Applied via kubectl against the provisioning.grafana.app API.
+# Requires `gitSync` and `provisioning` feature toggles (see docs/06-feature-toggle-reference.md).
+apiVersion: provisioning.grafana.app/v0alpha1
+kind: Repository
+metadata:
+  name: dashboards-main
+  namespace: grafana
+spec:
+  title: grafana-dashboards-prod
+  type: github
+  github:
+    url: "${GITSYNC_REPO_URL}"     # e.g. https://github.com/org/grafana-dashboards-prod
+    branch: "${GITSYNC_BRANCH}"    # main
+    path: dashboards/
+    # Prefer GitHub App auth; PAT is a fallback for dev-only.
+    auth:
+      type: github-app             # | pat
+      githubApp:
+        appIDRef:
+          name: grafana-gitsync
+          key: app_id
+        privateKeyRef:
+          name: grafana-gitsync
+          key: private_key
+  sync:
+    enabled: true
+    intervalSeconds: 60
+  workflows:
+    - name: pull-request
+      prTitleTemplate: "dashboards: {{ .Title }}"
+      prBodyTemplate: |
+        Automated dashboard change via Grafana Git Sync.
+
+        - Run: {{ .RunID }}
+        - Editor: {{ .User }}
+        - Folder: {{ .Folder }}

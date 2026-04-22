@@ -1,0 +1,21 @@
+# Remediation for §4 row #5 — top-level folder creators no longer auto-admin as of 12.3.
+# This file explicitly grants admin on top-level folders to the creating team.
+# NOTE: 12.3 enforces full-replace permissions — any ACL omitted is removed (except default Admin).
+apiVersion: 1
+resourcePermissions:
+  - orgId: 1
+    resource: folders
+    uid: platform
+    permissions:
+      - team: platform
+        permission: Admin
+      - team: sre
+        permission: Edit
+  - orgId: 1
+    resource: folders
+    uid: validation
+    permissions:
+      - team: platform
+        permission: Admin
+      - team: sre
+        permission: View

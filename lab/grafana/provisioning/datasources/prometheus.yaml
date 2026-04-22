@@ -1,0 +1,2 @@
+apiVersion: 1
+datasources: []  # Intentionally empty for bare-lab boot; add provisioning/datasources/* when LGTM is attached.

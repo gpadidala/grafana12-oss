@@ -1,0 +1,39 @@
+# GKE-specific overrides. Merge with values.common.yaml on the CLI.
+
+persistence:
+  storageClassName: standard-rwx  # Filestore CSI
+
+ingress:
+  enabled: true
+  ingressClassName: gce
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: grafana-static
+    networking.gke.io/managed-certificates: grafana-mc
+  hosts:
+    - grafana.example.internal
+  tls:
+    - secretName: grafana-tls
+      hosts:
+        - grafana.example.internal
+
+extraEnvVars:
+  - name: GF_UNIFIED_ALERTING_HA_LISTEN_ADDRESS
+    value: "0.0.0.0:9094"
+  - name: GF_UNIFIED_ALERTING_HA_ADVERTISE_ADDRESS
+    value: "$(POD_IP):9094"
+  - name: GF_UNIFIED_ALERTING_HA_PEERS
+    value: "grafana-headless.grafana.svc.cluster.local:9094"
+
+# Google OIDC
+grafana.ini:
+  auth.google:
+    enabled: true
+    allow_sign_up: true
+    client_id: "$__file{/etc/secrets/oidc/client_id}"
+    client_secret: "$__file{/etc/secrets/oidc/client_secret}"
+    scopes: "openid email profile"
+    auth_url: https://accounts.google.com/o/oauth2/auth
+    token_url: https://oauth2.googleapis.com/token
+    api_url: https://openidconnect.googleapis.com/v1/userinfo
+    hosted_domain: example.com     # 12.1 HD parameter validation
+    validate_hd: true

@@ -1,0 +1,27 @@
+name: gitsync-pr-check
+on:
+  pull_request:
+    paths:
+      - 'dashboards/**'
+
+jobs:
+  lint-and-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: JSON lint every changed dashboard
+        run: |
+          for f in $(git diff --name-only ${{ github.event.pull_request.base.sha }} HEAD -- 'dashboards/**/*.json'); do
+            python3 -c "import json,sys; json.load(open('$f'))"
+          done
+      - name: Headless render diff vs staging
+        env:
+          GRAFANA_URL: ${{ secrets.GRAFANA_URL_STAGING }}
+          GRAFANA_SA_TOKEN: ${{ secrets.GRAFANA_SA_TOKEN_STAGING }}
+        run: |
+          pip install requests Pillow
+          mkdir -p out/pr-$GITHUB_RUN_ID
+          RUN_ID=pr-$GITHUB_RUN_ID python3 validation/dashboard_render_diff.py \
+            --out out/pr-$GITHUB_RUN_ID --mode diff --threshold 0.02

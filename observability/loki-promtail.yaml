@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-migration-promtail
+  namespace: grafana
+data:
+  promtail.yaml: |
+    server:
+      http_listen_port: 9080
+    positions: { filename: /tmp/positions.yaml }
+    clients:
+      - url: http://loki-gateway/loki/api/v1/push
+    scrape_configs:
+      - job_name: grafana-migration
+        static_configs:
+          - targets: [localhost]
+            labels:
+              job: grafana-migration
+              run_id: ${RUN_ID}
+              __path__: /var/log/grafana-migration/*.log
+        pipeline_stages:
+          - json: { expressions: { level: level, step: step, event: event } }
+          - labels: { level: "", step: "", event: "" }

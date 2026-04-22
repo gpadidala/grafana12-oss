@@ -1,0 +1,26 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+  - job_name: grafana
+    static_configs:
+      - targets: ['grafana:3000']
+    metrics_path: /metrics
+    # 12.4 HA Alertmanager rename — drop the legacy prefix after the new one shows up.
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: grafana_cache_size.*
+        action: drop
+  - job_name: loki
+    static_configs:
+      - targets: ['loki:3100']
+  - job_name: tempo
+    static_configs:
+      - targets: ['tempo:3200']
+  - job_name: pyroscope
+    static_configs:
+      - targets: ['pyroscope:4040']

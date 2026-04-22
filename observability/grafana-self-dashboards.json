@@ -1,0 +1,7 @@
+{
+  "_comment": "Placeholder — self-monitoring dashboards live in dashboards/platform/. This file indexes provisioner entries.",
+  "dashboards": [
+    "dashboards/platform/grafana-self.json",
+    "dashboards/validation/v12-upgrade-overview.json"
+  ]
+}

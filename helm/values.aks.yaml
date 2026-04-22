@@ -1,0 +1,41 @@
+# AKS-specific overrides. Merge with values.common.yaml on the CLI.
+
+persistence:
+  storageClassName: azurefile-csi-premium
+
+ingress:
+  enabled: true
+  ingressClassName: azure-application-gateway
+  annotations:
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    appgw.ingress.kubernetes.io/backend-protocol: https
+  hosts:
+    - grafana.example.internal   # replace with actual AKS hostname
+  tls:
+    - secretName: grafana-tls
+      hosts:
+        - grafana.example.internal
+
+# HA Alertmanager peering — pods discover each other via the headless service.
+extraEnvVars:
+  - name: GF_UNIFIED_ALERTING_HA_LISTEN_ADDRESS
+    value: "0.0.0.0:9094"
+  - name: GF_UNIFIED_ALERTING_HA_ADVERTISE_ADDRESS
+    value: "$(POD_IP):9094"
+  - name: GF_UNIFIED_ALERTING_HA_PEERS
+    value: "grafana-headless.grafana.svc.cluster.local:9094"
+
+# Azure AD OIDC
+extraConfigmapMounts: []
+grafana.ini:
+  auth.generic_oauth:
+    enabled: true
+    name: "Azure AD"
+    allow_sign_up: true
+    client_id: "$__file{/etc/secrets/oidc/client_id}"
+    client_secret: "$__file{/etc/secrets/oidc/client_secret}"
+    scopes: "openid email profile"
+    auth_url: https://login.microsoftonline.com/<tenant>/oauth2/v2.0/authorize
+    token_url: https://login.microsoftonline.com/<tenant>/oauth2/v2.0/token
+    api_url: https://graph.microsoft.com/oidc/userinfo
+    role_attribute_path: "contains(groups[*], 'grafana-admins') && 'GrafanaAdmin' || 'Viewer'"

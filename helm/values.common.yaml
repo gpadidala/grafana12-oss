@@ -1,0 +1,147 @@
+# Shared Helm values for AKS + GKE. Cluster-specific overrides in values.aks.yaml / values.gke.yaml.
+# Chart: grafana/grafana. Chart version pinned on the CLI, not here.
+
+image:
+  repository: grafana/grafana-oss
+  # tag is injected on the CLI (--set image.tag=12.4.x) so the resolver can pin the exact patch.
+  pullPolicy: IfNotPresent
+
+replicas: 3
+statefulSet:
+  enabled: true
+
+podDisruptionBudget:
+  minAvailable: 2
+
+persistence:
+  enabled: true
+  type: statefulset
+  size: 50Gi
+  # storageClassName set per cluster in the overlay file
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  labels:
+    release: kube-prometheus-stack
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 472
+  runAsGroup: 472
+  fsGroup: 472
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  capabilities:
+    drop: [ALL]
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: "2"
+    memory: 4Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+networkPolicy:
+  enabled: true
+  ingress: true
+  egress:
+    enabled: true
+
+plugins: []
+
+# grafana.ini — canonical feature-toggle block lives here (mirrors docs/06-feature-toggle-reference.md).
+grafana.ini:
+  security:
+    disable_initial_admin_creation: true
+    cookie_secure: true
+    strict_transport_security: true
+    content_security_policy: true
+  users:
+    default_theme: system
+  unified_alerting:
+    enabled: true
+    # ha_peers / ha_listen_address / ha_advertise_address are patched per-pod via statefulset env
+  dashboards:
+    min_refresh_interval: 5s
+  plugins:
+    allow_loading_unsigned_plugins: ""
+    angular_support_enabled: false
+  feature_toggles:
+    enable: >-
+      provisioning,
+      kubernetesDashboards,
+      dashboardsNewLayouts,
+      dashboardScene,
+      grafanaManagedRecordingRules,
+      sqlExpressions,
+      regressionTransformation,
+      adhocFiltersNew,
+      logsPanelControls,
+      panelTimeSettings,
+      gitSync,
+      templateVariablesRegexTransform,
+      multiVariableProperties,
+      suggestedDashboards,
+      otlpLogs,
+      metricsDrilldown,
+      logsDrilldown,
+      tracesDrilldown,
+      profilesDrilldown
+
+# Database — external managed Postgres, credentials via ESO
+database:
+  type: postgres
+  # host, user, password, ssl_mode come from externalSecrets / extraEnvVarsSecret
+
+# Redis remote-cache for session + rendering
+extraEnvVars:
+  - name: GF_REMOTE_CACHE_TYPE
+    value: redis
+  - name: GF_REMOTE_CACHE_CONNSTR
+    valueFrom:
+      secretKeyRef:
+        name: grafana-redis
+        key: connstr
+
+# External Secrets Operator — actual ExternalSecret CRs live in provisioning/secrets/
+extraSecretMounts:
+  - name: grafana-oidc
+    secretName: grafana-oidc
+    mountPath: /etc/secrets/oidc
+    readOnly: true
+  - name: grafana-db
+    secretName: grafana-db
+    mountPath: /etc/secrets/db
+    readOnly: true
+
+# Sidecar for dashboards + datasources provisioning (Git Sync is separate)
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    searchNamespace: ALL
+    folderAnnotation: grafana_folder
+    provider:
+      foldersFromFilesStructure: true
+  datasources:
+    enabled: true
+    label: grafana_datasource
+    searchNamespace: ALL

@@ -1,0 +1,35 @@
+pipeline {
+  agent any
+  options { timestamps(); ansiColor('xterm'); disableConcurrentBuilds() }
+  parameters {
+    choice(name: 'ACTION', choices: ['audit', 'validate', 'e2e', 'migrate', 'rollback'], description: 'make target')
+    string(name: 'CLUSTER', defaultValue: 'aks', description: 'aks | gke')
+    string(name: 'IMAGE_TAG', defaultValue: '', description: 'Exact 12.4.x patch')
+    string(name: 'CHART_VERSION', defaultValue: '', description: 'Helm chart version')
+  }
+  environment {
+    GRAFANA_URL = credentials('grafana-url')
+    GRAFANA_SA_TOKEN = credentials('grafana-sa-token')
+    RUN_ID = "${env.BUILD_TAG}"
+  }
+  stages {
+    stage('preflight') { steps { sh 'python3 -V && helm version && kubectl version --client' } }
+    stage('run') {
+      steps {
+        script {
+          def confirmNeeded = params.ACTION in ['migrate','rollback']
+          if (confirmNeeded) { input message: "Confirm ${params.ACTION} on ${params.CLUSTER}?", ok: 'Yes' }
+          withEnv(["CLUSTER=${params.CLUSTER}",
+                   "GRAFANA_IMAGE_TAG=${params.IMAGE_TAG}",
+                   "HELM_CHART_VERSION=${params.CHART_VERSION}",
+                   "CONFIRM=${confirmNeeded ? 'yes' : ''}"]) {
+            sh "make ${params.ACTION}"
+          }
+        }
+      }
+    }
+  }
+  post {
+    always { archiveArtifacts artifacts: 'out/**', allowEmptyArchive: true }
+  }
+}
