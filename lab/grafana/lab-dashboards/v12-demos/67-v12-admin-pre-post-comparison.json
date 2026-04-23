@@ -1,0 +1,295 @@
+{
+  "uid": "v12-admin-prepost",
+  "title": "Grafana 12 Admin — Pre / Post Upgrade Comparison (plugins + dashboards)",
+  "description": "Side-by-side inventory of the 11.6.4 instance vs the live 12.4.1 instance. The 'pre' side is a baseline snapshot embedded inline (edit the pre-panel JSON to swap in your own audit output). The 'post' side live-queries /api/plugins and /api/search. Bottom panels compute additions and removals.",
+  "tags": ["grafana-12", "admin", "pre-post", "comparison", "migration", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "1m",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_api", "type": "datasource", "query": "yesoreyeram-infinity-datasource", "refresh": 1, "current": {"text": "Grafana API (Infinity)", "value": "grafana-api"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### What this dashboard does\n\n- **Left column = 11.6.4 baseline** — inline JSON, representing a typical pre-upgrade instance. Replace it with your real audit output (`out/audit-*/plugin_inventory.summary.json` and `out/audit-*/dashboard_inventory.summary.json`) by pasting into the *Query → Data → Inline data* field of any baseline panel.\n- **Right column = 12.4.1 live** — queries the running instance through the Infinity DS.\n- **Diff panels** (bottom) compute *removed* (in baseline, not in live — usually Angular plugins the migration purged) and *added* (new in 12.4.1 — usually Drilldown apps + replacements).\n\nAll counts are live. Refresh to re-query."}
+    },
+
+    { "id": 10, "type": "row", "title": "PLUGINS — pre vs post", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 6} },
+
+    {
+      "id": 11, "type": "stat", "title": "Pre (baseline 11.6.4) — plugin count",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 7},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "inline",
+        "data": "[{\"id\":\"graph\",\"name\":\"Graph (old)\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":true,\"signature\":\"grafana\"},{\"id\":\"singlestat\",\"name\":\"Singlestat\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":true,\"signature\":\"grafana\"},{\"id\":\"table-old\",\"name\":\"Table (old)\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":true,\"signature\":\"grafana\"},{\"id\":\"grafana-worldmap-panel\",\"name\":\"Worldmap Panel\",\"type\":\"panel\",\"version\":\"0.3.3\",\"angular\":true,\"signature\":\"commercial\"},{\"id\":\"grafana-piechart-panel\",\"name\":\"Pie Chart (old)\",\"type\":\"panel\",\"version\":\"1.6.2\",\"angular\":true,\"signature\":\"commercial\"},{\"id\":\"natel-discrete-panel\",\"name\":\"Discrete\",\"type\":\"panel\",\"version\":\"0.1.1\",\"angular\":true,\"signature\":\"community\"},{\"id\":\"vonage-status-panel\",\"name\":\"Status Panel\",\"type\":\"panel\",\"version\":\"1.0.11\",\"angular\":true,\"signature\":\"community\"},{\"id\":\"timeseries\",\"name\":\"Time series\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"stat\",\"name\":\"Stat\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"table\",\"name\":\"Table\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"gauge\",\"name\":\"Gauge\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"bargauge\",\"name\":\"Bar gauge\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"piechart\",\"name\":\"Pie chart (core)\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"prometheus\",\"name\":\"Prometheus\",\"type\":\"datasource\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"loki\",\"name\":\"Loki\",\"type\":\"datasource\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"tempo\",\"name\":\"Tempo\",\"type\":\"datasource\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"grafana-pyroscope-datasource\",\"name\":\"Pyroscope\",\"type\":\"datasource\",\"version\":\"1.0.1\",\"angular\":false,\"signature\":\"grafana\"}]",
+        "parser": "backend", "root_selector": "",
+        "summarizeExpression": "count(*)"
+      }],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 12, "type": "stat", "title": "Pre — Angular plugins (blocker)",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 7},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "inline",
+        "data": "[{\"id\":\"graph\",\"angular\":true},{\"id\":\"singlestat\",\"angular\":true},{\"id\":\"table-old\",\"angular\":true},{\"id\":\"grafana-worldmap-panel\",\"angular\":true},{\"id\":\"grafana-piechart-panel\",\"angular\":true},{\"id\":\"natel-discrete-panel\",\"angular\":true},{\"id\":\"vonage-status-panel\",\"angular\":true}]",
+        "parser": "backend", "root_selector": "",
+        "summarizeExpression": "count(*)"
+      }],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "color": {"mode": "thresholds"}}, "overrides": []}
+    },
+    {
+      "id": 13, "type": "stat", "title": "Post (12.4.1) — plugin count",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 7},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{"refId": "A", "type": "json", "source": "url", "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "", "summarizeExpression": "count(*)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 14, "type": "stat", "title": "Post — Angular plugins (must be 0)",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 7},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "url",
+        "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
+        "parser": "backend", "root_selector": "",
+        "columns": [{"selector": "angularDetected", "text": "angular", "type": "boolean"}],
+        "filters": [{"field": "angular", "operator": "equals", "value": ["true"]}],
+        "summarizeExpression": "count(*)"
+      }],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "color": {"mode": "thresholds"}, "noValue": "0"}, "overrides": []}
+    },
+
+    {
+      "id": 15, "type": "table", "title": "PRE — 11.6.4 plugin inventory (baseline)",
+      "gridPos": {"h": 14, "w": 12, "x": 0, "y": 11},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "inline",
+        "data": "[{\"id\":\"graph\",\"name\":\"Graph (old)\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":true,\"signature\":\"grafana\"},{\"id\":\"singlestat\",\"name\":\"Singlestat\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":true,\"signature\":\"grafana\"},{\"id\":\"table-old\",\"name\":\"Table (old)\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":true,\"signature\":\"grafana\"},{\"id\":\"grafana-worldmap-panel\",\"name\":\"Worldmap Panel\",\"type\":\"panel\",\"version\":\"0.3.3\",\"angular\":true,\"signature\":\"commercial\"},{\"id\":\"grafana-piechart-panel\",\"name\":\"Pie Chart (old)\",\"type\":\"panel\",\"version\":\"1.6.2\",\"angular\":true,\"signature\":\"commercial\"},{\"id\":\"natel-discrete-panel\",\"name\":\"Discrete\",\"type\":\"panel\",\"version\":\"0.1.1\",\"angular\":true,\"signature\":\"community\"},{\"id\":\"vonage-status-panel\",\"name\":\"Status Panel\",\"type\":\"panel\",\"version\":\"1.0.11\",\"angular\":true,\"signature\":\"community\"},{\"id\":\"timeseries\",\"name\":\"Time series\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"stat\",\"name\":\"Stat\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"table\",\"name\":\"Table\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"gauge\",\"name\":\"Gauge\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"bargauge\",\"name\":\"Bar gauge\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"piechart\",\"name\":\"Pie chart (core)\",\"type\":\"panel\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"prometheus\",\"name\":\"Prometheus\",\"type\":\"datasource\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"loki\",\"name\":\"Loki\",\"type\":\"datasource\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"tempo\",\"name\":\"Tempo\",\"type\":\"datasource\",\"version\":\"11.6.4\",\"angular\":false,\"signature\":\"grafana\"},{\"id\":\"grafana-pyroscope-datasource\",\"name\":\"Pyroscope\",\"type\":\"datasource\",\"version\":\"1.0.1\",\"angular\":false,\"signature\":\"grafana\"}]",
+        "parser": "backend", "root_selector": "",
+        "columns": [
+          {"selector": "id", "text": "ID"},
+          {"selector": "type", "text": "Type"},
+          {"selector": "version", "text": "Version"},
+          {"selector": "angular", "text": "Angular"},
+          {"selector": "signature", "text": "Signature"}
+        ]
+      }],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "Angular"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"true": {"color": "red", "text": "ANGULAR"}, "false": {"color": "green", "text": "React"}}}]}, {"id": "custom.width", "value": 100}]},
+          {"matcher": {"id": "byName", "options": "Type"}, "properties": [{"id": "custom.width", "value": 100}]},
+          {"matcher": {"id": "byName", "options": "Version"}, "properties": [{"id": "custom.width", "value": 120}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"]}}
+    },
+    {
+      "id": 16, "type": "table", "title": "POST — 12.4.1 plugin inventory (live)",
+      "gridPos": {"h": 14, "w": 12, "x": 12, "y": 11},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "url",
+        "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
+        "parser": "backend", "root_selector": "",
+        "columns": [
+          {"selector": "id", "text": "ID"},
+          {"selector": "type", "text": "Type"},
+          {"selector": "info.version", "text": "Version"},
+          {"selector": "angularDetected", "text": "Angular"},
+          {"selector": "signatureType", "text": "Signature"}
+        ]
+      }],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "Angular"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"true": {"color": "red", "text": "ANGULAR"}, "false": {"color": "green", "text": "React"}}}]}, {"id": "custom.width", "value": 100}]},
+          {"matcher": {"id": "byName", "options": "Type"}, "properties": [{"id": "custom.width", "value": 100}]},
+          {"matcher": {"id": "byName", "options": "Version"}, "properties": [{"id": "custom.width", "value": 120}]},
+          {"matcher": {"id": "byName", "options": "Signature"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"grafana": {"color": "green"}, "commercial": {"color": "green"}, "community": {"color": "blue"}, "unsigned": {"color": "red"}, "invalid": {"color": "red"}}}]}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"]}}
+    },
+
+    {
+      "id": 17, "type": "table", "title": "⬇ REMOVED after upgrade (pre only) — typically Angular casualties",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 25},
+      "datasource": {"uid": "__expr__", "type": "__expr__"},
+      "targets": [
+        {
+          "refId": "PRE",
+          "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+          "type": "json", "source": "inline",
+          "data": "[{\"id\":\"graph\"},{\"id\":\"singlestat\"},{\"id\":\"table-old\"},{\"id\":\"grafana-worldmap-panel\"},{\"id\":\"grafana-piechart-panel\"},{\"id\":\"natel-discrete-panel\"},{\"id\":\"vonage-status-panel\"},{\"id\":\"timeseries\"},{\"id\":\"stat\"},{\"id\":\"table\"},{\"id\":\"gauge\"},{\"id\":\"bargauge\"},{\"id\":\"piechart\"},{\"id\":\"prometheus\"},{\"id\":\"loki\"},{\"id\":\"tempo\"},{\"id\":\"grafana-pyroscope-datasource\"}]",
+          "parser": "backend", "root_selector": "",
+          "columns": [{"selector": "id", "text": "id_pre"}]
+        },
+        {
+          "refId": "POST",
+          "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+          "type": "json", "source": "url",
+          "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
+          "parser": "backend", "root_selector": "",
+          "columns": [{"selector": "id", "text": "id_post"}]
+        }
+      ],
+      "transformations": [
+        {"id": "joinByField", "options": {"byField": "id_pre", "mode": "outer"}},
+        {"id": "filterFieldsByName", "options": {"include": {"names": ["id_pre", "id_post"]}}}
+      ],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "color-background"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "id_pre"}, "properties": [{"id": "displayName", "value": "Plugin (pre)"}, {"id": "custom.width", "value": 300}]},
+          {"matcher": {"id": "byName", "options": "id_post"}, "properties": [{"id": "displayName", "value": "Still present?"}, {"id": "mappings", "value": [{"type": "special", "options": {"match": "null+nan", "result": {"color": "red", "text": "REMOVED"}}}]}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"], "fields": ["id_pre"]}}
+    },
+    {
+      "id": 18, "type": "table", "title": "⬆ ADDED by upgrade (post only) — new core apps + drilldowns",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 25},
+      "datasource": {"uid": "__expr__", "type": "__expr__"},
+      "targets": [
+        {
+          "refId": "POST",
+          "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+          "type": "json", "source": "url",
+          "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
+          "parser": "backend", "root_selector": "",
+          "columns": [{"selector": "id", "text": "id_post"}]
+        },
+        {
+          "refId": "PRE",
+          "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+          "type": "json", "source": "inline",
+          "data": "[{\"id\":\"graph\"},{\"id\":\"singlestat\"},{\"id\":\"table-old\"},{\"id\":\"grafana-worldmap-panel\"},{\"id\":\"grafana-piechart-panel\"},{\"id\":\"natel-discrete-panel\"},{\"id\":\"vonage-status-panel\"},{\"id\":\"timeseries\"},{\"id\":\"stat\"},{\"id\":\"table\"},{\"id\":\"gauge\"},{\"id\":\"bargauge\"},{\"id\":\"piechart\"},{\"id\":\"prometheus\"},{\"id\":\"loki\"},{\"id\":\"tempo\"},{\"id\":\"grafana-pyroscope-datasource\"}]",
+          "parser": "backend", "root_selector": "",
+          "columns": [{"selector": "id", "text": "id_pre"}]
+        }
+      ],
+      "transformations": [
+        {"id": "joinByField", "options": {"byField": "id_post", "mode": "outer"}},
+        {"id": "filterFieldsByName", "options": {"include": {"names": ["id_post", "id_pre"]}}}
+      ],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "color-background"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "id_post"}, "properties": [{"id": "displayName", "value": "Plugin (post)"}, {"id": "custom.width", "value": 300}]},
+          {"matcher": {"id": "byName", "options": "id_pre"}, "properties": [{"id": "displayName", "value": "Existed before?"}, {"id": "mappings", "value": [{"type": "special", "options": {"match": "null+nan", "result": {"color": "green", "text": "NEW"}}}]}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"], "fields": ["id_post"]}}
+    },
+
+    { "id": 20, "type": "row", "title": "DASHBOARDS — pre vs post", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 35} },
+
+    {
+      "id": 21, "type": "stat", "title": "Pre — dashboard count",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 36},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "inline",
+        "data": "[{\"uid\":\"legacy-overview\",\"title\":\"Legacy Overview (11.6)\",\"schemaVersion\":27,\"angular\":true,\"tags\":[\"legacy\"]},{\"uid\":\"legacy-host\",\"title\":\"Host Metrics (singlestat)\",\"schemaVersion\":27,\"angular\":true,\"tags\":[\"infra\"]},{\"uid\":\"legacy-worldmap\",\"title\":\"Geo View (worldmap)\",\"schemaVersion\":30,\"angular\":true,\"tags\":[\"geo\"]},{\"uid\":\"legacy-jvm\",\"title\":\"JVM\",\"schemaVersion\":35,\"angular\":false,\"tags\":[\"jvm\"]},{\"uid\":\"legacy-db\",\"title\":\"Postgres Overview\",\"schemaVersion\":36,\"angular\":false,\"tags\":[\"db\"]},{\"uid\":\"legacy-api\",\"title\":\"API SLOs\",\"schemaVersion\":36,\"angular\":false,\"tags\":[\"slo\"]},{\"uid\":\"legacy-alerts\",\"title\":\"Alerts Engine\",\"schemaVersion\":33,\"angular\":false,\"tags\":[\"alerting\"]},{\"uid\":\"legacy-traces\",\"title\":\"Traces (Aggregate By)\",\"schemaVersion\":35,\"angular\":false,\"tags\":[\"traces\"]}]",
+        "parser": "backend", "root_selector": "",
+        "summarizeExpression": "count(*)"
+      }],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 22, "type": "stat", "title": "Pre — dashboards with schemaVersion < 36 (blocker)",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 36},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "inline",
+        "data": "[{\"uid\":\"legacy-overview\",\"schemaVersion\":27},{\"uid\":\"legacy-host\",\"schemaVersion\":27},{\"uid\":\"legacy-worldmap\",\"schemaVersion\":30},{\"uid\":\"legacy-jvm\",\"schemaVersion\":35},{\"uid\":\"legacy-alerts\",\"schemaVersion\":33},{\"uid\":\"legacy-traces\",\"schemaVersion\":35}]",
+        "parser": "backend", "root_selector": "",
+        "columns": [{"selector": "schemaVersion", "text": "sv", "type": "number"}],
+        "filters": [{"field": "sv", "operator": "lt", "value": ["36"]}],
+        "summarizeExpression": "count(*)"
+      }],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}]}, "color": {"mode": "thresholds"}}, "overrides": []}
+    },
+    {
+      "id": 23, "type": "stat", "title": "Post — dashboard count",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 36},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{"refId": "A", "type": "json", "source": "url", "url": "/api/search?type=dash-db&limit=5000", "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "", "summarizeExpression": "count(*)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 24, "type": "stat", "title": "Post — folders",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 36},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{"refId": "A", "type": "json", "source": "url", "url": "/api/folders?limit=5000", "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "", "summarizeExpression": "count(*)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+
+    {
+      "id": 25, "type": "table", "title": "PRE — 11.6.4 dashboard inventory (baseline)",
+      "gridPos": {"h": 13, "w": 12, "x": 0, "y": 40},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "inline",
+        "data": "[{\"uid\":\"legacy-overview\",\"title\":\"Legacy Overview (11.6)\",\"schemaVersion\":27,\"angular\":true,\"tags\":[\"legacy\"]},{\"uid\":\"legacy-host\",\"title\":\"Host Metrics (singlestat)\",\"schemaVersion\":27,\"angular\":true,\"tags\":[\"infra\"]},{\"uid\":\"legacy-worldmap\",\"title\":\"Geo View (worldmap)\",\"schemaVersion\":30,\"angular\":true,\"tags\":[\"geo\"]},{\"uid\":\"legacy-jvm\",\"title\":\"JVM\",\"schemaVersion\":35,\"angular\":false,\"tags\":[\"jvm\"]},{\"uid\":\"legacy-db\",\"title\":\"Postgres Overview\",\"schemaVersion\":36,\"angular\":false,\"tags\":[\"db\"]},{\"uid\":\"legacy-api\",\"title\":\"API SLOs\",\"schemaVersion\":36,\"angular\":false,\"tags\":[\"slo\"]},{\"uid\":\"legacy-alerts\",\"title\":\"Alerts Engine\",\"schemaVersion\":33,\"angular\":false,\"tags\":[\"alerting\"]},{\"uid\":\"legacy-traces\",\"title\":\"Traces (Aggregate By)\",\"schemaVersion\":35,\"angular\":false,\"tags\":[\"traces\"]}]",
+        "parser": "backend", "root_selector": "",
+        "columns": [
+          {"selector": "uid", "text": "UID"},
+          {"selector": "title", "text": "Title"},
+          {"selector": "schemaVersion", "text": "schemaVersion", "type": "number"},
+          {"selector": "angular", "text": "Angular"}
+        ]
+      }],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "Angular"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"true": {"color": "red"}, "false": {"color": "green"}}}]}]},
+          {"matcher": {"id": "byName", "options": "schemaVersion"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 36}, {"color": "green", "value": 40}]}}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"]}}
+    },
+    {
+      "id": 26, "type": "table", "title": "POST — 12.4.1 dashboard inventory (live)",
+      "gridPos": {"h": 13, "w": 12, "x": 12, "y": 40},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "url",
+        "url": "/api/search?type=dash-db&limit=5000", "url_options": {"method": "GET"},
+        "parser": "backend", "root_selector": "",
+        "columns": [
+          {"selector": "uid", "text": "UID"},
+          {"selector": "title", "text": "Title"},
+          {"selector": "folderTitle", "text": "Folder"},
+          {"selector": "tags", "text": "Tags"}
+        ]
+      }],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "UID"}, "properties": [{"id": "custom.width", "value": 220}]},
+          {"matcher": {"id": "byName", "options": "Folder"}, "properties": [{"id": "custom.width", "value": 200}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"]}}
+    }
+  ]
+}
