@@ -65,6 +65,9 @@ ds:           ## Show every data source and its /health result
 toggles:      ## Verify every §5.6 feature toggle is enabled
 	@curl -fsS -u admin:admin $(GRAFANA_URL)/api/frontend/settings | python3 ../validation/feature_toggles_from_frontend.py
 
+dashboards:   ## Print direct URLs for every provisioned dashboard
+	@GRAFANA_URL=$(GRAFANA_URL) python3 ../validation/print_dashboards.py
+
 verify:       ## Full verification suite (health + DS + toggles)
 	@$(MAKE) --no-print-directory health
 	@echo
