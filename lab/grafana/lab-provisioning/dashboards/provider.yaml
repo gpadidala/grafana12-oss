@@ -10,13 +10,3 @@ providers:
     options:
       path: /usr/share/grafana-dashboards/v12-demos
       foldersFromFilesStructure: false
-  - name: platform
-    orgId: 1
-    folder: "Platform"
-    type: file
-    disableDeletion: false
-    updateIntervalSeconds: 30
-    allowUiUpdates: true
-    options:
-      path: /usr/share/grafana-dashboards/platform
-      foldersFromFilesStructure: false

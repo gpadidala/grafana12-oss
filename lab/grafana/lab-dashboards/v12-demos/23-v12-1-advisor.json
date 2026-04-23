@@ -1,0 +1,56 @@
+{
+  "uid": "v12-1-advisor",
+  "title": "Grafana 12.1 — Grafana Advisor",
+  "description": "The Grafana Advisor (12.1) is a built-in health scanner that flags broken plugins, unhealthy data sources, OIDC misconfig, legacy dashboards, etc. This dashboard deep-links to the Advisor and surfaces the underlying health signals.",
+  "tags": ["grafana-12", "v12.1", "advisor", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Grafana Advisor (12.1)\n\n- **[➡ Open Advisor](/a/grafana-advisor-app)** — runs a fresh health pass and reports plugin / DS / SSO / dashboard issues.\n- Complements `detect-angular-dashboards` (used in `make audit` for the v12 upgrade).\n- Advisor checks fire only on demand — cheap, safe to run pre-change and post-change."}
+    },
+    {
+      "id": 2, "type": "table", "title": "Plugin health (feeds Advisor)",
+      "gridPos": {"h": 11, "w": 12, "x": 0, "y": 6},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "grafana_plugin_build_info", "instant": true, "format": "table"}],
+      "transformations": [
+        {"id": "organize", "options": {"excludeByName": {"Time": true, "__name__": true, "Value": true, "instance": true, "job": true}, "renameByName": {"plugin_id": "Plugin", "plugin_type": "Type", "version": "Version", "signature_status": "Signature", "angular": "Angular"}}}
+      ],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "Angular"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"true": {"text": "ANGULAR", "color": "red"}, "false": {"text": "React", "color": "green"}}}]}]},
+          {"matcher": {"id": "byName", "options": "Signature"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"valid": {"color": "green"}, "unsigned": {"color": "red"}}}]}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm"}
+    },
+    {
+      "id": 3, "type": "stat", "title": "Data sources configured",
+      "gridPos": {"h": 5, "w": 12, "x": 12, "y": 6},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "grafana_datasource_request_duration_seconds_count", "instant": true, "format": "table"}],
+      "transformations": [{"id": "reduce", "options": {"reducers": ["count"], "labelsToFields": false}}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 4, "type": "stat", "title": "Plugins with load errors (Advisor: BLOCKER)",
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 11},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(grafana_plugin_load_errors) or on() vector(0)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "color": {"mode": "thresholds"}}, "overrides": []}
+    }
+  ]
+}

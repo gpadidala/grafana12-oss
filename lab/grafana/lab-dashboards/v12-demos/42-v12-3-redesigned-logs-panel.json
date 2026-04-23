@@ -1,0 +1,30 @@
+{
+  "uid": "v12-3-logs-panel",
+  "title": "Grafana 12.3 — Redesigned Logs Panel",
+  "description": "12.3 shipped a redesigned logs panel with improved log-pattern recognition, inline controls, expandable columns, and faster scrolling for very chatty log streams. Toggle: `newLogsPanel`.",
+  "tags": ["grafana-12", "v12.3", "logs", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_loki", "type": "datasource", "query": "loki", "refresh": 1, "current": {"text": "Loki", "value": "loki"}},
+    {"name": "container", "type": "query", "datasource": {"uid": "${ds_loki}", "type": "loki"}, "query": {"query": "label_values(container)", "refId": "StandardVariableQuery"}, "refresh": 2, "multi": false, "current": {"text": "grafana12_grafana", "value": "grafana12_grafana"}, "hide": 0}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Redesigned logs panel (12.3)\n\n- Pattern recognition groups repeating messages.\n- Column controls (`Time / Severity / Message / Extracted`) are on the panel header, no more opening options.\n- Tail mode stays smooth at 1000+ lines/s.\n\nChange `$container` at the top to point the panel at any container Loki is scraping."}
+    },
+    {
+      "id": 2, "type": "logs", "title": "Live logs — `$container`",
+      "gridPos": {"h": 18, "w": 24, "x": 0, "y": 4},
+      "datasource": {"uid": "${ds_loki}", "type": "loki"},
+      "targets": [{"refId": "A", "expr": "{container=\"$container\"}", "maxLines": 500}],
+      "options": {"showTime": true, "showLabels": true, "showCommonLabels": false, "wrapLogMessage": true, "prettifyLogMessage": true, "enableLogDetails": true, "dedupStrategy": "none", "sortOrder": "Descending"}
+    }
+  ]
+}

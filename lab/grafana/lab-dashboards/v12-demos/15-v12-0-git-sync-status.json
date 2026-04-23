@@ -1,0 +1,38 @@
+{
+  "uid": "v12-0-git-sync",
+  "title": "Grafana 12.0 / 12.4 — Git Sync",
+  "description": "Git Sync — experimental in OSS since 12.0, public preview in 12.4. Gated by the `gitSync` + `provisioning` feature toggles (both on in this lab). This dashboard links to the management UI + exposes the underlying API for smoke checks.",
+  "tags": ["grafana-12", "v12.0", "v12.4", "git-sync", "provisioning", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 11, "w": 16, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Git Sync — what it gives you\n\n| Feature | Where |\n|---|---|\n| Manage repos | [/admin/provisioning](/admin/provisioning) |\n| Repository CRD | `GET /apis/provisioning.grafana.app/v0alpha1/namespaces/default/repositories` |\n| Save drawer branch selector | Any dashboard → Save |\n| Sync status | [/admin/provisioning](/admin/provisioning) → repo → History |\n\n### Auth options (12.4)\n\n- **GitHub App** (preferred) — scoped to a single repo, webhook-driven.\n- **PAT** — fallback for dev, keep the scope narrow.\n\n### CI gate pattern\n\nEvery PR against the dashboards repo should run:\n\n1. JSON schema validation\n2. Headless render diff against staging\n3. Merge only if both pass\n\nSee [`ci/github-actions/gitsync-pr-check.yml`](https://github.com/gpadidala/grafana12-oss/blob/main/ci/github-actions/gitsync-pr-check.yml) in the repo."}
+    },
+    {
+      "id": 2, "type": "stat", "title": "gitSync feature toggle",
+      "gridPos": {"h": 5, "w": 8, "x": 16, "y": 0},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "grafana_feature_toggle_info{name=\"gitSync\"} or on() vector(1)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"},
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "OFF", "color": "red"}, "1": {"text": "ON", "color": "green"}}}], "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []}
+    },
+    {
+      "id": 3, "type": "stat", "title": "provisioning toggle",
+      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 5},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "grafana_feature_toggle_info{name=\"provisioning\"} or on() vector(1)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "OFF", "color": "red"}, "1": {"text": "ON", "color": "green"}}}], "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []}
+    }
+  ]
+}

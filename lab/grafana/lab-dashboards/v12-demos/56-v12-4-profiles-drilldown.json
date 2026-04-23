@@ -1,0 +1,37 @@
+{
+  "uid": "v12-4-profiles-dd",
+  "title": "Grafana 12.4 — Profiles Drilldown + Flame Graph",
+  "description": "Profiles Drilldown (on top of Pyroscope) went GA in 12.0 and 12.4 added the Profiles Assistant. This dashboard wires a flame-graph panel against the Pyroscope datasource + surfaces Pyroscope's self-profile so you have something to look at.",
+  "tags": ["grafana-12", "v12.0", "v12.4", "profiles", "pyroscope", "flamegraph", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_pyro", "type": "datasource", "query": "grafana-pyroscope-datasource", "refresh": 1, "current": {"text": "Pyroscope", "value": "pyroscope"}},
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 6, "w": 16, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Profiles Drilldown (GA 12.0 · Assistant 12.4)\n\n- **[➡ Open Profiles Drilldown](/a/grafana-pyroscope-app)** — group by service / endpoint / label, compare flame graphs over time.\n- The 12.4 Profiles Assistant surfaces hot paths automatically.\n- Feature toggle: `profilesDrilldown` ✓.\n\n### Sample query\n\nPyroscope is profiling itself (`pyroscope.self`) — the flame graph below queries its own CPU samples."}
+    },
+    {
+      "id": 2, "type": "stat", "title": "Pyroscope backend",
+      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 0},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "up{job=\"pyroscope\"}"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}}], "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []}
+    },
+    {
+      "id": 3, "type": "flamegraph", "title": "Pyroscope self CPU profile",
+      "gridPos": {"h": 18, "w": 24, "x": 0, "y": 6},
+      "datasource": {"uid": "${ds_pyro}", "type": "grafana-pyroscope-datasource"},
+      "targets": [{"refId": "A", "profileTypeId": "process_cpu:cpu:nanoseconds:cpu:nanoseconds", "labelSelector": "{service_name=\"pyroscope\"}", "groupBy": []}]
+    }
+  ]
+}

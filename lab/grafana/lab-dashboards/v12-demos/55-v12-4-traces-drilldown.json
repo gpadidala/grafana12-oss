@@ -1,0 +1,47 @@
+{
+  "uid": "v12-4-traces-dd",
+  "title": "Grafana 12.4 — Traces Drilldown + TraceQL Metrics",
+  "description": "Traces Drilldown went GA in 12.0 (replacing Aggregate-by / metrics-summary which was REMOVED — playbook item #10). 12.4 smoothed out TraceQL metrics: rate / quantile over trace data. This dashboard links out to the Drilldown app and shows Tempo's self-scrape health.",
+  "tags": ["grafana-12", "v12.0", "v12.4", "traces", "tempo", "drilldown", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
+    {"name": "ds_tempo", "type": "datasource", "query": "tempo", "refresh": 1, "current": {"text": "Tempo", "value": "tempo"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 6, "w": 16, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Traces Drilldown (GA in 12.0 · TraceQL metrics stabilized in 12.4)\n\n- **[➡ Open Traces Drilldown](/a/grafana-exploretraces-app)**\n- Query language: TraceQL — e.g. `{ service.name=\"checkout\" && duration > 500ms }`\n- **TraceQL metrics** (new): `{} | rate() by (service.name)` and similar aggregates replace the removed `metrics-summary` API.\n\n### Breaking change (12.0)\n\nThe old **Aggregate by** UI and `/api/metrics/summary` endpoint were REMOVED. Any dashboard that hit them shows broken panels — migrate to TraceQL metrics. See [playbook item #10](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#10--tempo--aggregate-by--metrics-summary-api-removed-120) for the rewrite recipe."}
+    },
+    {
+      "id": 2, "type": "stat", "title": "Tempo backend",
+      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 0},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "up{job=\"tempo\"}"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}}], "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []}
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "Tempo ingester — spans received rate",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 6},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "rate(tempo_ingester_bytes_received_total[$__rate_interval]) or on() vector(0)", "legendFormat": "bytes/s"}],
+      "fieldConfig": {"defaults": {"unit": "Bps", "custom": {"drawStyle": "line", "fillOpacity": 20, "lineWidth": 2}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "calcs": ["mean", "max"]}}
+    },
+    {
+      "id": 4, "type": "timeseries", "title": "Tempo query duration p95",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 6},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "histogram_quantile(0.95, sum by (le)(rate(tempo_query_frontend_query_duration_seconds_bucket[$__rate_interval]))) or on() vector(0)", "legendFormat": "p95"}],
+      "fieldConfig": {"defaults": {"unit": "s", "decimals": 4, "custom": {"drawStyle": "line", "fillOpacity": 20, "lineWidth": 2}}, "overrides": []},
+      "options": {"legend": {"showLegend": false}}
+    }
+  ]
+}

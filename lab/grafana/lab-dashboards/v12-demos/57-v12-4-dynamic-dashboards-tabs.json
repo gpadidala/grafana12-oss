@@ -1,0 +1,57 @@
+{
+  "uid": "v12-4-dynamic",
+  "title": "Grafana 12.4 — Dynamic Dashboards (tabs + conditional rows)",
+  "description": "Dynamic dashboards (new layout engine with Tabs, Conditional rows, and responsive grids) moved to public preview in 12.4. Toggles: `kubernetesDashboards`, `dashboardsNewLayouts`. This demo groups panels into signal-typed rows — in the new layout UI each row can become a tab.",
+  "tags": ["grafana-12", "v12.4", "layout", "dynamic", "tabs", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
+    {"name": "ds_loki", "type": "datasource", "query": "loki",       "refresh": 1, "current": {"text": "Loki",       "value": "loki"}}
+  ]},
+  "panels": [
+    {
+      "id": 100, "type": "text", "title": "",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Dynamic dashboards (public preview · 12.4)\n\nEdit the dashboard → **Dashboard settings → Layout** and you'll see the option to convert these rows into **Tabs** or add **Conditional rows** (show/hide based on variable values). The layout schema is stored as v2 — remember: **one-way migration** (playbook item #6 — always backup first)."}
+    },
+    {"id": 200, "type": "row", "title": "METRICS", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 4}},
+    {
+      "id": 2, "type": "timeseries", "title": "HTTP request rate",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 5},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum by (handler) (rate(grafana_http_request_duration_seconds_count[$__rate_interval]))", "legendFormat": "{{handler}}"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line", "fillOpacity": 15, "stacking": {"mode": "normal"}}}, "overrides": []},
+      "options": {"legend": {"displayMode": "hidden"}}
+    },
+    {
+      "id": 3, "type": "stat", "title": "Prom targets UP",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 5},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(up)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {"id": 201, "type": "row", "title": "LOGS", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 14}},
+    {
+      "id": 4, "type": "logs", "title": "Grafana logs",
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 15},
+      "datasource": {"uid": "${ds_loki}", "type": "loki"},
+      "targets": [{"refId": "A", "expr": "{container=\"grafana12_grafana\"}", "maxLines": 100}],
+      "options": {"showTime": true, "wrapLogMessage": true, "enableLogDetails": true, "sortOrder": "Descending", "dedupStrategy": "none"}
+    },
+    {"id": 202, "type": "row", "title": "CONTAINERS", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 25}},
+    {
+      "id": 5, "type": "timeseries", "title": "Container memory",
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 26},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "container_memory_usage_bytes{name!=\"\"}", "legendFormat": "{{name}}"}],
+      "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"drawStyle": "line", "fillOpacity": 5}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["mean", "max"]}}
+    }
+  ]
+}

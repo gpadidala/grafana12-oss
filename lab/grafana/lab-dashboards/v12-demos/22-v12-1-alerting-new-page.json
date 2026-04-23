@@ -1,0 +1,46 @@
+{
+  "uid": "v12-1-alert-rule-page",
+  "title": "Grafana 12.1 — New Alert Rule Page (GA)",
+  "description": "The Alert rule authoring page went GA in 12.1 (guided wizard, simplified routing, recording-rule parity). This demo shows live alert counts + links to the new UI.",
+  "tags": ["grafana-12", "v12.1", "alerting", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-30m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 8, "w": 16, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### What changed\n\n12.1 moved the **Alert rule page** out of preview. You now get:\n\n- A guided wizard for Grafana-managed alert rules (& recording rules from 12.0)\n- Simpler *Notifications* step with step-mode routing\n- Inline preview of the alert expression\n- Parity with Prometheus-managed rules via `grafanaManagedRecordingRules`\n\n### Try it\n\n- [➡ Create a new alert rule](/alerting/new/alerting)\n- [➡ Create a new recording rule](/alerting/new/recording)\n- [➡ Alert rule list](/alerting/list)\n- [➡ Contact points](/alerting/notifications)\n\n### Suggested recipe\n\n```\nName:       grafana:api_p95_breach\nExpression: histogram_quantile(0.95,\n              sum by (le)(rate(grafana_http_request_duration_seconds_bucket[5m]))\n            ) > 0.5\nFor:        5m\nLabels:     severity=warning, service=grafana\n```"}
+    },
+    {
+      "id": 2, "type": "stat", "title": "Alert rules",
+      "gridPos": {"h": 4, "w": 8, "x": 16, "y": 0},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(grafana_alerting_rule_group_rules) or on() vector(0)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 3, "type": "stat", "title": "Rules evaluating",
+      "gridPos": {"h": 4, "w": 8, "x": 16, "y": 4},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "rate(grafana_alerting_rule_evaluations_total[$__rate_interval]) or on() vector(0)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"unit": "reqps", "decimals": 3}, "overrides": []}
+    },
+    {
+      "id": 4, "type": "timeseries", "title": "Rule evaluation duration (p95)",
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 8},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "histogram_quantile(0.95, sum by (le)(rate(grafana_alerting_rule_evaluation_duration_seconds_bucket[$__rate_interval]))) or on() vector(0)", "legendFormat": "p95"}],
+      "fieldConfig": {"defaults": {"unit": "s", "decimals": 4, "custom": {"drawStyle": "line", "fillOpacity": 20, "lineWidth": 2}}, "overrides": []},
+      "options": {"legend": {"showLegend": false}}
+    }
+  ]
+}
