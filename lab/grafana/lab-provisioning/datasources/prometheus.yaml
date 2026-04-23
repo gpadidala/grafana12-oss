@@ -9,3 +9,6 @@ datasources:
     jsonData:
       timeInterval: 30s
       httpMethod: POST
+      tlsSkipVerify: true
+      tlsAuth: false
+      tlsAuthWithCACert: false

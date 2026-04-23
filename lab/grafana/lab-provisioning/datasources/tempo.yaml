@@ -6,6 +6,7 @@ datasources:
     access: proxy
     url: http://tempo:3200
     jsonData:
+      tlsSkipVerify: true
       tracesToLogsV2:
         datasourceUid: loki
         tags: [{ key: service.name, value: service }]

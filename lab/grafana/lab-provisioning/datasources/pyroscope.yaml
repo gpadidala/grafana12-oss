@@ -5,3 +5,5 @@ datasources:
     type: grafana-pyroscope-datasource
     access: proxy
     url: http://pyroscope:4040
+    jsonData:
+      tlsSkipVerify: true
