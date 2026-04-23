@@ -27,15 +27,15 @@ x-proxy-env: &proxy_env
 
 services:
   postgres:
-    image: postgres:${POSTGRES_TAG}
+    image: postgres:${POSTGRES_TAG:-16-alpine}
     container_name: grafana12_postgres
     environment:
       <<: *proxy_env
-      POSTGRES_USER: ${GF_DATABASE_USER}
-      POSTGRES_PASSWORD: ${GF_DATABASE_PASSWORD}
-      POSTGRES_DB: ${GF_DATABASE_NAME}
+      POSTGRES_USER: ${GF_DATABASE_USER:-grafana}
+      POSTGRES_PASSWORD: ${GF_DATABASE_PASSWORD:-grafana-lab-db}
+      POSTGRES_DB: ${GF_DATABASE_NAME:-grafana}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${GF_DATABASE_USER} -d ${GF_DATABASE_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${GF_DATABASE_USER:-grafana} -d ${GF_DATABASE_NAME:-grafana}"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -44,12 +44,12 @@ services:
     restart: unless-stopped
 
   renderer:
-    image: grafana/grafana-image-renderer:${GRAFANA_RENDERER_TAG}
+    image: grafana/grafana-image-renderer:${GRAFANA_RENDERER_TAG:-3.12.0}
     container_name: grafana12_renderer
     environment:
       <<: *proxy_env
       ENABLE_METRICS: "true"
-      AUTH_TOKEN: ${RENDERER_AUTH_TOKEN}
+      AUTH_TOKEN: ${RENDERER_AUTH_TOKEN:-lab-only-renderer-token-32bytes}
       # Renderer uses Chromium — tell it to ignore TLS errors on self-signed corp CAs.
       IGNORE_HTTPS_ERRORS: "true"
     restart: unless-stopped
@@ -60,8 +60,8 @@ services:
       dockerfile: Dockerfile
       args:
         <<: *proxy_build_args
-        PROMETHEUS_TAG: ${PROMETHEUS_TAG}
-    image: grafana12-oss-lab/prometheus:${PROMETHEUS_TAG}
+        PROMETHEUS_TAG: ${PROMETHEUS_TAG:-v2.55.0}
+    image: grafana12-oss-lab/prometheus:${PROMETHEUS_TAG:-v2.55.0}
     container_name: grafana12_prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
@@ -82,8 +82,8 @@ services:
       dockerfile: Dockerfile
       args:
         <<: *proxy_build_args
-        LOKI_TAG: ${LOKI_TAG}
-    image: grafana12-oss-lab/loki:${LOKI_TAG}
+        LOKI_TAG: ${LOKI_TAG:-3.3.0}
+    image: grafana12-oss-lab/loki:${LOKI_TAG:-3.3.0}
     container_name: grafana12_loki
     command: -config.file=/etc/loki/loki-config.yaml
     environment:
@@ -100,8 +100,8 @@ services:
       dockerfile: Dockerfile
       args:
         <<: *proxy_build_args
-        TEMPO_TAG: ${TEMPO_TAG}
-    image: grafana12-oss-lab/tempo:${TEMPO_TAG}
+        TEMPO_TAG: ${TEMPO_TAG:-2.6.0}
+    image: grafana12-oss-lab/tempo:${TEMPO_TAG:-2.6.0}
     container_name: grafana12_tempo
     command: ["-config.file=/etc/tempo/tempo-config.yaml"]
     environment:
@@ -118,8 +118,8 @@ services:
       dockerfile: Dockerfile
       args:
         <<: *proxy_build_args
-        PYROSCOPE_TAG: ${PYROSCOPE_TAG}
-    image: grafana12-oss-lab/pyroscope:${PYROSCOPE_TAG}
+        PYROSCOPE_TAG: ${PYROSCOPE_TAG:-1.8.0}
+    image: grafana12-oss-lab/pyroscope:${PYROSCOPE_TAG:-1.8.0}
     container_name: grafana12_pyroscope
     command: ["server", "--config.file=/etc/pyroscope/pyroscope-config.yaml"]
     environment:
@@ -136,8 +136,8 @@ services:
       dockerfile: Dockerfile
       args:
         <<: *proxy_build_args
-        ALLOY_TAG: ${ALLOY_TAG}
-    image: grafana12-oss-lab/alloy:${ALLOY_TAG}
+        ALLOY_TAG: ${ALLOY_TAG:-v1.6.0}
+    image: grafana12-oss-lab/alloy:${ALLOY_TAG:-v1.6.0}
     container_name: grafana12_alloy
     command:
       - run
@@ -160,8 +160,8 @@ services:
       dockerfile: Dockerfile
       args:
         <<: *proxy_build_args
-        GRAFANA_IMAGE_TAG: ${GRAFANA_IMAGE_TAG}
-    image: grafana12-oss-lab/grafana:${GRAFANA_IMAGE_TAG}
+        GRAFANA_IMAGE_TAG: ${GRAFANA_IMAGE_TAG:-12.4.1}
+    image: grafana12-oss-lab/grafana:${GRAFANA_IMAGE_TAG:-12.4.1}
     container_name: grafana12_grafana
     depends_on:
       postgres:
@@ -211,9 +211,9 @@ services:
       GF_NEWS_NEWS_FEED_ENABLED: ${GF_NEWS_NEWS_FEED_ENABLED}
       GF_DATABASE_TYPE: ${GF_DATABASE_TYPE}
       GF_DATABASE_HOST: ${GF_DATABASE_HOST}
-      GF_DATABASE_NAME: ${GF_DATABASE_NAME}
-      GF_DATABASE_USER: ${GF_DATABASE_USER}
-      GF_DATABASE_PASSWORD: ${GF_DATABASE_PASSWORD}
+      GF_DATABASE_NAME: ${GF_DATABASE_NAME:-grafana}
+      GF_DATABASE_USER: ${GF_DATABASE_USER:-grafana}
+      GF_DATABASE_PASSWORD: ${GF_DATABASE_PASSWORD:-grafana-lab-db}
       GF_DATABASE_SSL_MODE: ${GF_DATABASE_SSL_MODE}
       GF_RENDERING_SERVER_URL: ${GF_RENDERING_SERVER_URL}
       GF_RENDERING_CALLBACK_URL: ${GF_RENDERING_CALLBACK_URL}
@@ -270,7 +270,7 @@ services:
     image: prometheuscommunity/postgres-exporter:v0.16.0
     container_name: grafana12_postgres_exporter
     environment:
-      DATA_SOURCE_NAME: "postgresql://${GF_DATABASE_USER}:${GF_DATABASE_PASSWORD}@postgres:5432/${GF_DATABASE_NAME}?sslmode=disable"
+      DATA_SOURCE_NAME: "postgresql://${GF_DATABASE_USER:-grafana}:${GF_DATABASE_PASSWORD:-grafana-lab-db}@postgres:5432/${GF_DATABASE_NAME:-grafana}?sslmode=disable"
     depends_on:
       postgres:
         condition: service_healthy

@@ -13,24 +13,68 @@ Repo split:
 
 ---
 
-## 1. Quick start — bring the lab up in one command
+## 1. Quick start — run with `docker compose` (no `make` needed)
 
-Prereqs: Docker Desktop (tested on macOS + Docker 29.1.3), `make`, `curl`, `python3`.
+Prereqs: **Docker Desktop** running. That's it.
+
+### Three rules that make it work every time
+
+1. **`cd` into the `lab/` directory** — NOT `lab/compose/`. The `.env` file lives in `lab/` and compose looks there.
+2. **Create `.env` before the first run** — it's gitignored; only `.env.example` ships with the repo.
+3. **Pass `--env-file .env -f compose/docker-compose.yml`** to `docker compose` explicitly so the path isn't ambiguous.
+
+### Exact commands
+
+#### macOS / Linux
 
 ```bash
 cd lab
-make up
+cp .env.example .env    # first time only
+docker compose --env-file .env -f compose/docker-compose.yml -p grafana12-oss-lab up -d --build
 ```
 
-That's it. `make up`:
-1. Auto-creates `.env` from `.env.example` if missing
-2. Builds 6 service-local Docker images (Grafana + LGTM configs baked in — no /Volumes bind mounts, survives Docker Desktop file-sharing issues)
-3. Pulls the pinned images for the rest
-4. Installs 3 plugins (`yesoreyeram-infinity-datasource`, `grafana-polystat-panel`, `grafana-clock-panel`) via `GF_PLUGINS_PREINSTALL`
-5. Provisions 5 datasources (Prometheus, Loki, Tempo, Pyroscope, Grafana API via Infinity) + 34 dashboards
-6. Waits for `/api/health` and prints all service URLs
+#### Windows (PowerShell)
 
-Open **http://localhost:3012** — you'll land on the *v12 Upgrade Overview* (anonymous Admin, no login friction).
+```powershell
+cd lab
+Copy-Item .env.example .env     # first time only
+docker compose --env-file .env -f compose/docker-compose.yml -p grafana12-oss-lab up -d --build
+```
+
+#### Legacy `docker-compose` v1 (hyphenated, still works)
+
+```bash
+cd lab
+docker-compose --env-file .env -f compose/docker-compose.yml -p grafana12-oss-lab up -d --build
+```
+
+**Do not run from `lab/compose/`** — that's the `unable to get image 'grafana12-oss-lab/prometheus:': invalid reference format` error. `docker compose` v1 only reads `.env` from the current directory, so image-tag substitution comes up blank if you're in the wrong folder.
+
+### Verify
+
+```bash
+docker compose -f compose/docker-compose.yml -p grafana12-oss-lab ps
+curl http://localhost:3012/api/health
+```
+
+Open **http://localhost:3012** — lands on the *v12 Upgrade Overview* (anonymous Admin, no login).
+
+### Common commands
+
+| Action | Command (run from `lab/`) |
+|---|---|
+| Stop, keep volumes | `docker compose -f compose/docker-compose.yml -p grafana12-oss-lab down` |
+| Nuke + reset volumes | `docker compose -f compose/docker-compose.yml -p grafana12-oss-lab down -v` |
+| Tail Grafana logs | `docker compose -f compose/docker-compose.yml -p grafana12-oss-lab logs -f grafana` |
+| Rebuild after changing dashboards/configs | `docker compose --env-file .env -f compose/docker-compose.yml -p grafana12-oss-lab build --no-cache grafana && docker compose --env-file .env -f compose/docker-compose.yml -p grafana12-oss-lab up -d --force-recreate grafana` |
+
+### Shortcut helpers (optional)
+
+- `make up` / `make down` / `make status` (macOS / Linux) — same commands wrapped
+- `.\setup.ps1` (Windows) — bootstraps `.env` and runs `docker compose` for you
+- `./setup.sh` (macOS / Linux) — same as setup.ps1
+
+The compose file has built-in defaults for every image tag — `${POSTGRES_TAG:-16-alpine}`, `${GRAFANA_IMAGE_TAG:-12.4.1}`, etc. — so even if `.env` is missing the build won't fail with blank tags. Only the Grafana admin password + secret key need to come from `.env`.
 
 ---
 
@@ -299,6 +343,17 @@ Source of truth: [`docs/06-feature-toggle-reference.md`](docs/06-feature-toggle-
 ---
 
 ## 9. Troubleshooting
+
+**`invalid reference format` / all env vars "not set"** — you're running `docker compose up` from `lab/compose/` directly. Compose only reads `.env` from the CWD, and the `.env` lives one level up in `lab/`. Fix:
+
+```bash
+cd lab                               # NOT lab/compose/
+docker compose --env-file .env -f compose/docker-compose.yml -p grafana12-oss-lab up -d --build
+```
+
+See §1 — the `--env-file` + `-f` flags make the invocation work from anywhere.
+
+**`Cannot connect to the Docker daemon` / `npipe:////./pipe/dockerDesktopLinuxEngine`** — Docker Desktop isn't running. Start it (macOS: `open -a Docker`; Windows: Start menu → Docker Desktop) and wait ~30s for the whale icon to stop animating.
 
 **Docker Desktop / `/Volumes` bind-mount error** — this used to kill bring-up. Fixed: all configs baked into service Dockerfiles. If you still see `mkdir /host_mnt/Volumes/Gopalmac: file exists`, do `make reset && make up`.
 
