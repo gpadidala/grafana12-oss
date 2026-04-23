@@ -237,6 +237,43 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  node_exporter:
+    # On Docker Desktop (macOS) the host FS is not bind-mountable as shared, so we
+    # run node_exporter against the container's own procfs/sysfs. Metrics reflect
+    # the Linux VM Docker Desktop provides — good enough to light up dashboard #1860.
+    image: prom/node-exporter:v1.8.2
+    container_name: grafana12_node_exporter
+    command:
+      - --path.procfs=/proc
+      - --path.sysfs=/sys
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|etc)($$|/)
+      - --no-collector.wifi
+      - --no-collector.hwmon
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: grafana12_cadvisor
+    privileged: true
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: grafana12_postgres_exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${GF_DATABASE_USER}:${GF_DATABASE_PASSWORD}@postgres:5432/${GF_DATABASE_NAME}?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   pgdata:
   grafana_data:

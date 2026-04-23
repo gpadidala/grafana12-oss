@@ -16,4 +16,6 @@ ENV HTTP_PROXY=${HTTP_PROXY} \
     no_proxy=${NO_PROXY}
 
 COPY --chown=grafana:root lab-provisioning/ /etc/grafana/provisioning/
-COPY --chown=grafana:root lab-dashboards/   /var/lib/grafana/dashboards/
+# /usr/share/grafana-dashboards is OUTSIDE the /var/lib/grafana named volume
+# so baked dashboards stay visible even when the volume is pre-populated.
+COPY --chown=grafana:root lab-dashboards/   /usr/share/grafana-dashboards/
