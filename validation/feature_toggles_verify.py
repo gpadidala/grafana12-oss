@@ -46,8 +46,12 @@ def main() -> int:
     c = GrafanaClient.from_env()
     # /api/featuremgmt is admin-scoped and may 404 behind basic auth; fall back to
     # /api/frontend/settings which reports the same toggle state to any authenticated user.
+    # In Grafana 12.4 the /api/featuremgmt response became `{features: [...]}`;
+    # older patches returned a flat array. Handle both.
     try:
         ft = c.get("/api/featuremgmt")
+        if isinstance(ft, dict):
+            ft = ft.get("features", []) or []
         state = {f["name"]: bool(f.get("enabled")) for f in ft if isinstance(f, dict)}
     except Exception:  # noqa: BLE001
         fs = c.get("/api/frontend/settings")

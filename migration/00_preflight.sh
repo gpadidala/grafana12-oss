@@ -3,7 +3,7 @@
 set -euo pipefail
 
 : "${GRAFANA_URL:?}" "${GRAFANA_SA_TOKEN:?}" "${K8S_NAMESPACE:?}"
-: "${GRAFANA_IMAGE_TAG:?set target patch, e.g. 12.4.3}"
+: "${GRAFANA_IMAGE_TAG:?set target patch, e.g. 12.4.1}"
 : "${HELM_CHART_VERSION:?pin chart version, never latest}"
 
 log() { printf '{"ts":"%s","level":"%s","step":"preflight","event":"%s"}\n' "$(date -u +%FT%TZ)" "$1" "$2"; }
@@ -11,7 +11,7 @@ log() { printf '{"ts":"%s","level":"%s","step":"preflight","event":"%s"}\n' "$(d
 # Version pin guard — refuse minor-only tags.
 if ! [[ "$GRAFANA_IMAGE_TAG" =~ ^12\.4\.[0-9]+$ ]]; then
   log fatal invalid_image_tag
-  echo "ERROR: GRAFANA_IMAGE_TAG must be exact patch like 12.4.3, got: $GRAFANA_IMAGE_TAG" >&2
+  echo "ERROR: GRAFANA_IMAGE_TAG must be exact patch like 12.4.1, got: $GRAFANA_IMAGE_TAG" >&2
   exit 2
 fi
 

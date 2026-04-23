@@ -7,7 +7,7 @@ export GRAFANA_ORG_ID="1"
 
 # --- target image pin (resolved at audit; never 'latest', never minor-only) ---
 export GRAFANA_IMAGE_REPO="grafana/grafana-oss"
-export GRAFANA_IMAGE_TAG=""            # e.g. 12.4.3 — fill from resolver
+export GRAFANA_IMAGE_TAG=""            # e.g. 12.4.1 — fill from resolver
 export HELM_CHART_VERSION=""           # e.g. 9.x.x — fill from `helm search repo`
 
 # --- clusters ---

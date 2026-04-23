@@ -1,7 +1,7 @@
 # Bakes provisioning + dashboards into the Grafana 12.4 image so the lab boots
 # cleanly on macOS Docker Desktop without /Volumes bind mounts and inside a
 # corporate proxy (proxy args passed through at build time).
-ARG GRAFANA_IMAGE_TAG=12.4.3
+ARG GRAFANA_IMAGE_TAG=12.4.1
 FROM grafana/grafana-oss:${GRAFANA_IMAGE_TAG}
 
 # Proxy passthrough — only takes effect if you set these in .env.

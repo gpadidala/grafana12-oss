@@ -48,7 +48,13 @@ validate: feature-toggles-verify
 	$(PY) validation/dashboard_render_diff.py --out $(OUT_DIR)
 	$(PY) validation/alerting_parity.py --out $(OUT_DIR)
 	$(PY) validation/acceptance_gate.py --out $(OUT_DIR)
-	@echo "[validate] acceptance gate: $(OUT_DIR)/acceptance.md"
+	@mkdir -p $(OUT_DIR)/validate
+	$(PY) validation/gate.py \
+	  --audit-dir $(OUT_DIR) \
+	  --fix-dir   $(OUT_DIR) \
+	  --url       $${GRAFANA_URL} \
+	  --report    $(OUT_DIR)/validate/go-no-go.html
+	@echo "[validate] 30-item gate: $(OUT_DIR)/validate/go-no-go.html"
 
 e2e:
 	@mkdir -p $(OUT_DIR)
