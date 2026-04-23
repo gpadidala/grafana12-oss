@@ -1,0 +1,73 @@
+{
+  "uid": "v12-upgrade-overview",
+  "title": "Grafana 12 — Upgrade Overview",
+  "description": "Single-pane landing page for the v12 demo suite. Links to every feature dashboard and shows version + health of the underlying lab.",
+  "tags": ["grafana-12", "overview", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-30m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "datasource", "type": "datasource", "query": "prometheus", "refresh": 1, "hide": 0, "current": {"text": "Prometheus", "value": "prom"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "Grafana version",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "datasource": {"uid": "${datasource}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "grafana_build_info", "legendFormat": "{{version}}", "instant": true}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "/^version$/"}, "colorMode": "value", "graphMode": "none", "textMode": "value"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": []}, "overrides": []}
+    },
+    {
+      "id": 2, "type": "stat", "title": "Scrape targets UP",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+      "datasource": {"uid": "${datasource}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(up)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 8}]}, "color": {"mode": "thresholds"}}, "overrides": []}
+    },
+    {
+      "id": 3, "type": "stat", "title": "Angular panels (must be 0)",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+      "datasource": {"uid": "${datasource}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(grafana_plugin_build_info{angular=\"true\"}) or vector(0)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "color": {"mode": "thresholds"}}, "overrides": []}
+    },
+    {
+      "id": 4, "type": "stat", "title": "HTTP p95 (1m)",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+      "datasource": {"uid": "${datasource}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "histogram_quantile(0.95, sum by (le)(rate(grafana_http_request_duration_seconds_bucket[1m])))"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"unit": "s", "decimals": 3}, "overrides": []}
+    },
+    {
+      "id": 5, "type": "text", "title": "",
+      "gridPos": {"h": 14, "w": 12, "x": 0, "y": 4},
+      "options": {
+        "mode": "markdown",
+        "content": "## Grafana 12.0 — 12.4 feature dashboards\n\n| Feature | Demo dashboard |\n|---|---|\n| Drilldown suite (Metrics / Logs / Traces / Profiles) | [v12.0 Drilldown Suite](/d/v12-0-drilldown/grafana-12-0-drilldown-suite) |\n| React-data-grid table refactor | [v12.0 React Data Grid Table](/d/v12-0-table/grafana-12-0-react-data-grid-table) |\n| Grafana-managed recording rules | [v12.0 Recording Rules](/d/v12-0-recording-rules/grafana-12-0-recording-rules) |\n| SQL Expressions | [v12.0 SQL Expressions](/d/v12-0-sql-expr/grafana-12-0-sql-expressions) |\n| Regression transformation | [v12.1 Regression Analysis](/d/v12-1-regression/grafana-12-1-regression-transform) |\n| Visualization Actions | [v12.1 Visualization Actions](/d/v12-1-viz-actions/grafana-12-1-visualization-actions) |\n| Ad-hoc filters (enhanced) | [v12.2 Ad-hoc Filters](/d/v12-2-adhoc/grafana-12-2-ad-hoc-filters) |\n| Panel time-settings drawer | [v12.3 Panel Time Drawer](/d/v12-3-time-drawer/grafana-12-3-panel-time-drawer) |\n| Multi-property variables | [v12.4 Multi-property Variables](/d/v12-4-multiprop/grafana-12-4-multi-property-variables) |\n| Regex variable value transforms | [v12.4 Regex Variables](/d/v12-4-regex-vars/grafana-12-4-regex-variable-transforms) |\n| Updated gauge panel (Circular + Arc) | [v12.4 Gauge Styles](/d/v12-4-gauge/grafana-12-4-gauge-styles) |\n| OTLP log defaults | [v12.4 OTLP Logs](/d/v12-4-otlp/grafana-12-4-otlp-logs) |\n| HA Alertmanager cluster metrics rename | [v12.4 HA Alertmanager Metrics](/d/v12-4-am-ha/grafana-12-4-ha-alertmanager)"
+      }
+    },
+    {
+      "id": 6, "type": "text", "title": "",
+      "gridPos": {"h": 14, "w": 12, "x": 12, "y": 4},
+      "options": {
+        "mode": "markdown",
+        "content": "## Drilldown apps (Grafana 12 core)\n\nThese replaced Explore Metrics/Logs/Traces and went GA in 12.0:\n\n- [Metrics Drilldown](/a/grafana-metricsdrilldown-app)\n- [Logs Drilldown](/a/grafana-lokiexplore-app)\n- [Traces Drilldown](/a/grafana-exploretraces-app)\n- [Profiles Drilldown](/a/grafana-pyroscope-app)\n\n## Administration\n\n- [Feature toggles](/admin/featuretoggles) — assert every required toggle is on\n- [Plugin catalog](/plugins) — 12.0 revamped install flow\n- [Grafana Advisor](/a/grafana-advisor-app) — 12.1 plugin/DS/SSO checks\n- [Alert rule page](/alerting/new/alerting) — 12.1 GA\n- [Dashboards](/dashboards) — browse all\n\n## Source of truth\n\nThis lab targets the canonical pins and features documented in `docs/01-breaking-changes-matrix.md` (30-item playbook). Any toggle or breaking change referenced there has a live validator in `validation/gate.py`."
+      }
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "HTTP request rate (per route)",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 18},
+      "datasource": {"uid": "${datasource}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum by (handler) (rate(grafana_http_request_duration_seconds_count[$__rate_interval]))", "legendFormat": "{{handler}}"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 15, "stacking": {"mode": "normal"}}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["mean", "max"]}, "tooltip": {"mode": "multi"}}
+    }
+  ]
+}

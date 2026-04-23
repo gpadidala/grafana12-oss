@@ -1,0 +1,55 @@
+{
+  "uid": "v12-1-viz-actions",
+  "title": "Grafana 12.1 — Visualization Actions",
+  "description": "Demonstrates Visualization Actions with custom variables: each stat has an action button that opens another dashboard / external URL with the panel's label values substituted in.",
+  "tags": ["grafana-12", "v12.1", "actions", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Visualization Actions (12.1)\n\nClick the ⋮ menu on any Stat below and you'll see the **Action** the panel exposes — opens another page with the series' labels substituted into the URL.\n\nAction definitions are stored inside each panel's `options.actions` — inspect the panel JSON to copy the pattern into your own dashboards."}
+    },
+    {
+      "id": 2, "type": "stat", "title": "Prometheus targets — click to open raw list",
+      "gridPos": {"h": 7, "w": 8, "x": 0, "y": 4},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum by (job) (up)", "legendFormat": "{{job}}"}],
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none", "textMode": "value_and_name",
+        "actions": [{"title": "Open Prometheus targets", "fetch": {"url": "http://localhost:9092/targets", "method": "GET"}, "onlyWhenNoResult": false}]
+      },
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}}}], "color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 3, "type": "stat", "title": "Loki label count — click to explore",
+      "gridPos": {"h": 7, "w": 8, "x": 8, "y": 4},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "loki_distributor_bytes_received_total or on() vector(0)"}],
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area",
+        "actions": [{"title": "Open Logs Drilldown", "fetch": {"url": "/a/grafana-lokiexplore-app", "method": "GET"}}]
+      },
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []}
+    },
+    {
+      "id": 4, "type": "stat", "title": "Tempo traces — click to drill down",
+      "gridPos": {"h": 7, "w": 8, "x": 16, "y": 4},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "up{job=\"tempo\"}"}],
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none",
+        "actions": [{"title": "Open Traces Drilldown", "fetch": {"url": "/a/grafana-exploretraces-app", "method": "GET"}}]
+      },
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}}], "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []}
+    }
+  ]
+}

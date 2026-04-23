@@ -1,0 +1,45 @@
+{
+  "uid": "v12-1-regression",
+  "title": "Grafana 12.1 — Regression Transform",
+  "description": "Shows the 12.1 Regression Analysis transformation overlaying a linear and a polynomial fit on top of live metrics. Use the right-hand panel to extrapolate container memory into the near future.",
+  "tags": ["grafana-12", "v12.1", "transformations", "regression", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-30m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
+    {"name": "container", "type": "query", "datasource": {"uid": "${ds_prom}", "type": "prometheus"}, "query": "label_values(container_memory_usage_bytes{name!=\"\"}, name)", "refresh": 2, "multi": false, "current": {"text": "grafana12_grafana", "value": "grafana12_grafana"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Regression analysis transformation (12.1)\n\nEach panel has a second \"Regression\" series added via **Transform → Regression analysis**. Left panel uses the *Linear* model; right panel uses *Polynomial* (degree 3) — good for forecasting a few minutes ahead."}
+    },
+    {
+      "id": 2, "type": "timeseries", "title": "Linear regression — HTTP rate",
+      "gridPos": {"h": 11, "w": 12, "x": 0, "y": 4},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(rate(grafana_http_request_duration_seconds_count[$__rate_interval]))", "legendFormat": "req/s (observed)"}],
+      "transformations": [
+        {"id": "regression", "options": {"modelType": "linear", "predictionCount": 60, "yFieldName": "req/s (observed)"}}
+      ],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line", "fillOpacity": 15, "lineWidth": 2}}, "overrides": [{"matcher": {"id": "byRegexp", "options": "/.*predicted.*/"}, "properties": [{"id": "custom.lineStyle", "value": {"dash": [8, 8]}}, {"id": "color", "value": {"mode": "fixed", "fixedColor": "yellow"}}]}]},
+      "options": {"legend": {"displayMode": "table", "calcs": ["mean", "last"]}}
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "Polynomial regression — memory of `${container}`",
+      "gridPos": {"h": 11, "w": 12, "x": 12, "y": 4},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "container_memory_usage_bytes{name=\"${container}\"}", "legendFormat": "memory (observed)"}],
+      "transformations": [
+        {"id": "regression", "options": {"modelType": "polynomial", "degree": 3, "predictionCount": 120, "yFieldName": "memory (observed)"}}
+      ],
+      "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"drawStyle": "line", "fillOpacity": 15, "lineWidth": 2}}, "overrides": [{"matcher": {"id": "byRegexp", "options": "/.*predicted.*/"}, "properties": [{"id": "custom.lineStyle", "value": {"dash": [8, 8]}}, {"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}]}]},
+      "options": {"legend": {"displayMode": "table", "calcs": ["mean", "last"]}}
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "uid": "v12-2-adhoc",
+  "title": "Grafana 12.2 — Ad-hoc Filters (enhanced)",
+  "description": "The ad-hoc filter UX was rebuilt and went GA in 12.2 (`adhocFiltersNew`). Pick any label at the top of the dashboard and every panel below filters to it.",
+  "tags": ["grafana-12", "v12.2", "adhoc", "variables", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
+    {"name": "filter", "type": "adhoc", "datasource": {"uid": "${ds_prom}", "type": "prometheus"}, "hide": 0, "label": "Ad-hoc filter"}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 3, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "Pick a label + value in the **Ad-hoc filter** at the top. Both panels re-query automatically — no expression editing needed. Try `job=grafana` or `name=grafana12_loki`."}
+    },
+    {
+      "id": 2, "type": "timeseries", "title": "up{…adhoc filters…}",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 3},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "up", "legendFormat": "{{job}} / {{instance}}"}],
+      "fieldConfig": {"defaults": {"custom": {"drawStyle": "line", "fillOpacity": 20, "lineWidth": 2}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["last"]}}
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "container_memory_usage_bytes{…adhoc filters…}",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 3},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "container_memory_usage_bytes{name!=\"\"}", "legendFormat": "{{name}}"}],
+      "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"drawStyle": "line", "fillOpacity": 10}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["max", "last"]}}
+    }
+  ]
+}

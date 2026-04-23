@@ -1,0 +1,46 @@
+{
+  "uid": "v12-3-time-drawer",
+  "title": "Grafana 12.3 — Panel Time Settings Drawer",
+  "description": "12.3 added a per-panel time-settings drawer so you can override the dashboard range without opening the full edit view. Each panel below has a different relative range configured via the drawer.",
+  "tags": ["grafana-12", "v12.3", "time", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Panel time drawer (12.3)\n\nDashboard range: **last 1 hour**. Each panel below overrides it to a different window. Click the little clock icon in any panel's title menu → *Panel time range* to see the drawer."}
+    },
+    {
+      "id": 2, "type": "timeseries", "title": "Last 5 minutes", "timeFrom": "now-5m",
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 4},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "rate(grafana_http_request_duration_seconds_count[1m])", "legendFormat": "{{handler}}"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line"}}, "overrides": []},
+      "options": {"legend": {"showLegend": false}}
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "Last 15 minutes", "timeFrom": "now-15m",
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 4},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "rate(grafana_http_request_duration_seconds_count[1m])", "legendFormat": "{{handler}}"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line"}}, "overrides": []},
+      "options": {"legend": {"showLegend": false}}
+    },
+    {
+      "id": 4, "type": "timeseries", "title": "Last 3 hours (looks past dashboard range)", "timeFrom": "now-3h",
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 4},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "rate(grafana_http_request_duration_seconds_count[1m])", "legendFormat": "{{handler}}"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line"}}, "overrides": []},
+      "options": {"legend": {"showLegend": false}}
+    }
+  ]
+}

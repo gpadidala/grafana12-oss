@@ -1,26 +1,16 @@
 apiVersion: 1
 providers:
-  - name: lab-validation
+  - name: v12-demos
     orgId: 1
-    folder: "v12 Validation"
+    folder: "Grafana 12 Feature Demos"
     type: file
     disableDeletion: false
     updateIntervalSeconds: 30
     allowUiUpdates: true
     options:
-      path: /usr/share/grafana-dashboards/validation
+      path: /usr/share/grafana-dashboards/v12-demos
       foldersFromFilesStructure: false
-  - name: lab-feature-demos
-    orgId: 1
-    folder: "v12 Feature Demos"
-    type: file
-    disableDeletion: false
-    updateIntervalSeconds: 30
-    allowUiUpdates: true
-    options:
-      path: /usr/share/grafana-dashboards/v12-feature-demos
-      foldersFromFilesStructure: false
-  - name: lab-platform
+  - name: platform
     orgId: 1
     folder: "Platform"
     type: file
@@ -29,14 +19,4 @@ providers:
     allowUiUpdates: true
     options:
       path: /usr/share/grafana-dashboards/platform
-      foldersFromFilesStructure: false
-  - name: lab-advanced
-    orgId: 1
-    folder: "Advanced (grafana.com)"
-    type: file
-    disableDeletion: false
-    updateIntervalSeconds: 30
-    allowUiUpdates: true
-    options:
-      path: /usr/share/grafana-dashboards/advanced
       foldersFromFilesStructure: false

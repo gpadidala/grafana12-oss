@@ -1,0 +1,56 @@
+{
+  "uid": "v12-0-drilldown",
+  "title": "Grafana 12.0 — Drilldown Suite",
+  "description": "Showcases the Drilldown suite that went GA in 12.0 (Metrics / Logs / Traces / Profiles) plus live signals from each datasource so you can see why you would drill down.",
+  "tags": ["grafana-12", "v12.0", "drilldown", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
+    {"name": "ds_loki", "type": "datasource", "query": "loki",       "refresh": 1, "current": {"text": "Loki",       "value": "loki"}},
+    {"name": "ds_tempo","type": "datasource", "query": "tempo",      "refresh": 1, "current": {"text": "Tempo",      "value": "tempo"}},
+    {"name": "ds_pyro", "type": "datasource", "query": "grafana-pyroscope-datasource", "refresh": 1, "current": {"text": "Pyroscope", "value": "pyroscope"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 5, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Open a drilldown app\n\n[➡ Metrics Drilldown](/a/grafana-metricsdrilldown-app) · [➡ Logs Drilldown](/a/grafana-lokiexplore-app) · [➡ Traces Drilldown](/a/grafana-exploretraces-app) · [➡ Profiles Drilldown](/a/grafana-pyroscope-app)\n\nThe four panels below surface live signal **from the data source each drilldown sits on top of** — click any panel title → *View* to jump into Explore, or use the links above to enter the drilldown UI directly."}
+    },
+    {
+      "id": 2, "type": "timeseries", "title": "Metrics — HTTP request rate (Prometheus)",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 5},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum by (status_code) (rate(grafana_http_request_duration_seconds_count[$__rate_interval]))", "legendFormat": "HTTP {{status_code}}"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line", "fillOpacity": 20, "stacking": {"mode": "normal"}}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "calcs": ["mean"]}}
+    },
+    {
+      "id": 3, "type": "logs", "title": "Logs — Grafana container (Loki)",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 5},
+      "datasource": {"uid": "${ds_loki}", "type": "loki"},
+      "targets": [{"refId": "A", "expr": "{container=\"grafana12_grafana\"}", "maxLines": 200}],
+      "options": {"showTime": true, "wrapLogMessage": true, "enableLogDetails": true, "sortOrder": "Descending", "dedupStrategy": "none"}
+    },
+    {
+      "id": 4, "type": "stat", "title": "Traces backend health (Tempo)",
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 14},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "up{job=\"tempo\"}", "legendFormat": "tempo up"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"},
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}}], "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []}
+    },
+    {
+      "id": 5, "type": "stat", "title": "Profiles backend health (Pyroscope)",
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 14},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "up{job=\"pyroscope\"}", "legendFormat": "pyroscope up"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}}], "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []}
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "uid": "v12-4-multiprop",
+  "title": "Grafana 12.4 — Multi-property Variables",
+  "description": "12.4 added the ability to map many identifiers onto one logical variable value. This dashboard maps `dev`+`development` → `dev` and `prod`+`production` → `prod` so one `env` variable drives queries whether the label value is written long-form or short-form.",
+  "tags": ["grafana-12", "v12.4", "variables", "multi-property", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
+    {
+      "name": "env", "label": "Environment", "type": "custom",
+      "description": "Grafana 12.4 multi-property variable — one option can carry multiple query values.",
+      "multi": true, "includeAll": true, "allValue": ".*",
+      "options": [
+        {"text": "dev",         "value": "dev",  "selected": true},
+        {"text": "development", "value": "dev",  "selected": true},
+        {"text": "staging",     "value": "stg"},
+        {"text": "prod",        "value": "prod", "selected": true},
+        {"text": "production",  "value": "prod", "selected": true}
+      ],
+      "current": {"text": ["dev", "development", "prod", "production"], "value": ["dev", "dev", "prod", "prod"]}
+    }
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Multi-property variables (12.4)\n\nThe `env` variable has five display options:\n\n| Display | Value sent to query |\n|---|---|\n| `dev`          | `dev`  |\n| `development`  | `dev`  |\n| `staging`      | `stg`  |\n| `prod`         | `prod` |\n| `production`   | `prod` |\n\nSelect *dev* and *development* — the query sees the SAME `dev` value in both cases and collapses to a single series. Before 12.4 you needed two variables or regex tricks to do this."}
+    },
+    {
+      "id": 2, "type": "stat", "title": "Chosen env (raw variable value)",
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 6},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "count(up) * 0 + 1", "legendFormat": "env=${env:csv}"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "none", "textMode": "name"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "up{env=~\"${env:pipe}\"} — regex-joined via the pipe formatter",
+      "gridPos": {"h": 11, "w": 24, "x": 0, "y": 12},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "up{env=~\"${env:pipe}\"} or on() up", "legendFormat": "{{job}} {{instance}}"}],
+      "fieldConfig": {"defaults": {"custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 15}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    }
+  ]
+}

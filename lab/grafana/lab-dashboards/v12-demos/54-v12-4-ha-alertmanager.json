@@ -1,0 +1,49 @@
+{
+  "uid": "v12-4-am-ha",
+  "title": "Grafana 12.4 — HA Alertmanager Metric Rename",
+  "description": "12.4 changed the metric name prefix for HA Alertmanager cluster metrics (playbook item #11). This dashboard queries the NEW prefix directly against Grafana's /metrics so you can confirm the rename before pointing your Mimir recording rules / Prometheus alerts at it.",
+  "tags": ["grafana-12", "v12.4", "alertmanager", "ha", "breaking-change", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-30m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 5, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### HA Alertmanager metric prefix rename (12.4)\n\n| Pre-12.4 | 12.4+ |\n|---|---|\n| `alertmanager_cluster_members` | `grafana_alerting_ha_members` |\n| `alertmanager_cluster_messages_received_total` | `grafana_alerting_ha_messages_received_total` |\n| `alertmanager_cluster_gossip_clock_skew_seconds` | `grafana_alerting_ha_gossip_clock_skew_seconds` |\n\nPanels below query both — in a fresh 12.4.x instance only the **new** prefix should return data. Use this to verify your Mimir recording rules + Prometheus alerts were migrated."}
+    },
+    {
+      "id": 2, "type": "stat", "title": "New prefix: grafana_alerting_ha_members",
+      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 5},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(grafana_alerting_ha_members) or on() vector(0)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area", "textMode": "value_and_name"},
+      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"mode": "absolute", "steps": [{"color": "orange", "value": null}, {"color": "green", "value": 1}]}, "color": {"mode": "thresholds"}}, "overrides": []}
+    },
+    {
+      "id": 3, "type": "stat", "title": "OLD prefix (should be empty): alertmanager_cluster_members",
+      "gridPos": {"h": 7, "w": 12, "x": 12, "y": 5},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(alertmanager_cluster_members) or on() vector(0)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "color": {"mode": "thresholds"}, "noValue": "0 — old prefix retired ✓"}, "overrides": []}
+    },
+    {
+      "id": 4, "type": "timeseries", "title": "Gossip messages — NEW prefix",
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [
+        {"refId": "A", "expr": "rate(grafana_alerting_ha_messages_received_total[$__rate_interval]) or on() vector(0)", "legendFormat": "received/s"},
+        {"refId": "B", "expr": "rate(grafana_alerting_ha_messages_sent_total[$__rate_interval]) or on() vector(0)", "legendFormat": "sent/s"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 15}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "calcs": ["mean", "max"]}}
+    }
+  ]
+}

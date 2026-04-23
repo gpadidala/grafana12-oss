@@ -1,0 +1,60 @@
+{
+  "uid": "v12-0-table",
+  "title": "Grafana 12.0 — React Data Grid Table",
+  "description": "Shows off the Table panel's 12.0 refactor to react-data-grid: grouping, in-cell sparklines, color thresholds, JSON cell viewer, column resizing, row pinning. Data: one row per scrape target, plus one row per Docker container via cAdvisor.",
+  "tags": ["grafana-12", "v12.0", "v12.2", "table", "react-data-grid", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-5m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### What's new\n\nIn **Grafana 12.0** the Table panel was rewritten on top of [`react-data-grid`](https://adazzle.github.io/react-data-grid/): it loads / sorts / filters big tables much faster and got a refreshed cell model. In **12.2** the same rewrite went **GA**.\n\nBoth tables below exercise the new engine — click column headers to sort, drag borders to resize, click any header menu for group / filter."}
+    },
+    {
+      "id": 2, "type": "table", "title": "Scrape targets (each row = one Prometheus job)",
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 4},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "up", "instant": true, "format": "table"}],
+      "transformations": [
+        {"id": "organize", "options": {"excludeByName": {"Time": true, "__name__": true}, "renameByName": {"Value": "up?", "job": "Job", "instance": "Instance"}, "indexByName": {"Job": 0, "Instance": 1, "up?": 2}}}
+      ],
+      "fieldConfig": {
+        "defaults": {"custom": {"align": "auto", "cellOptions": {"type": "auto"}, "filterable": true}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "up?"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "gradient"}}, {"id": "mappings", "value": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}}]}, {"id": "custom.width", "value": 120}]},
+          {"matcher": {"id": "byName", "options": "Job"}, "properties": [{"id": "custom.width", "value": 180}]}
+        ]
+      },
+      "options": {"showHeader": true, "footer": {"show": true, "reducer": ["sum"], "fields": ["up?"]}, "cellHeight": "sm"}
+    },
+    {
+      "id": 3, "type": "table", "title": "Container memory (cAdvisor) — sparklines + color cells",
+      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 14},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [
+        {"refId": "A", "expr": "avg by (name) (container_memory_usage_bytes{name!=\"\"})", "instant": true, "format": "table", "legendFormat": "{{name}}"},
+        {"refId": "B", "expr": "avg by (name) (rate(container_cpu_usage_seconds_total{name!=\"\"}[1m]))", "instant": true, "format": "table", "legendFormat": "{{name}}"}
+      ],
+      "transformations": [
+        {"id": "merge"},
+        {"id": "organize", "options": {"excludeByName": {"Time": true, "Time 1": true, "Time 2": true, "__name__": true}, "renameByName": {"name": "Container", "Value #A": "Memory (bytes)", "Value #B": "CPU (cores)"}}}
+      ],
+      "fieldConfig": {
+        "defaults": {"custom": {"align": "auto", "cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "Memory (bytes)"}, "properties": [{"id": "unit", "value": "bytes"}, {"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 104857600}, {"color": "red", "value": 524288000}]}}]},
+          {"matcher": {"id": "byName", "options": "CPU (cores)"}, "properties": [{"id": "unit", "value": "short"}, {"id": "decimals", "value": 4}, {"id": "custom.cellOptions", "value": {"type": "gauge", "mode": "gradient"}}, {"id": "max", "value": 0.5}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["sum"], "fields": ["Memory (bytes)"]}}
+    }
+  ]
+}

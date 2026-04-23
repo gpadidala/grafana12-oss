@@ -1,0 +1,46 @@
+{
+  "uid": "v12-4-regex-vars",
+  "title": "Grafana 12.4 — Regex Variable Transforms",
+  "description": "12.4 lets you apply a regex to both the variable VALUE and the displayed TEXT. Pick any `handler` below — the dropdown shows the short name but the query uses the full path.",
+  "tags": ["grafana-12", "v12.4", "variables", "regex", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
+    {
+      "name": "handler_full", "label": "Handler (full path)", "type": "query",
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "query": {"query": "label_values(grafana_http_request_duration_seconds_count, handler)", "refId": "StandardVariableQuery"},
+      "refresh": 2, "multi": false, "includeAll": false, "hide": 0,
+      "regex": "/^(?<value>.+)$/",
+      "description": "Captures full path. Displayed short-form via the variable below."
+    },
+    {
+      "name": "handler_short", "label": "Handler (display)", "type": "query",
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "query": {"query": "label_values(grafana_http_request_duration_seconds_count, handler)", "refId": "StandardVariableQuery"},
+      "refresh": 2, "multi": false, "includeAll": false, "hide": 0,
+      "regex": "/^.*\\/(?<text>[^\\/]+)$/",
+      "description": "12.4 regex-text transform — captures only the final path segment for display."
+    }
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 5, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Regex variable transforms (12.4)\n\n- **`handler_full`** — regex `^(?<value>.+)$` keeps the whole path. Used in queries.\n- **`handler_short`** — regex `^.*/(?<text>[^/]+)$` captures only the last path segment for display.\n\nEach panel below injects both forms so you can see display-vs-value."}
+    },
+    {
+      "id": 2, "type": "timeseries", "title": "req/s for `${handler_short}` (query value: `${handler_full}`)",
+      "gridPos": {"h": 11, "w": 24, "x": 0, "y": 5},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum by (status_code) (rate(grafana_http_request_duration_seconds_count{handler=\"${handler_full}\"}[$__rate_interval]))", "legendFormat": "{{status_code}}"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line", "fillOpacity": 15}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "right"}}
+    }
+  ]
+}

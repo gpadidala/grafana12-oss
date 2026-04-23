@@ -1,0 +1,45 @@
+{
+  "uid": "v12-3-switch-var",
+  "title": "Grafana 12.3 — Switch Template Variable",
+  "description": "12.3 added a boolean toggle variable type. Flip `show_details` at the top to reveal / hide the detailed panel below — great for hiding expensive queries until a reviewer asks for them.",
+  "tags": ["grafana-12", "v12.3", "variables", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
+    {"name": "show_details", "type": "custom", "label": "Show details", "query": "0,1", "options": [{"text": "Off", "value": "0", "selected": true}, {"text": "On", "value": "1"}], "current": {"text": "Off", "value": "0"}, "hide": 0}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 3, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "Toggle **Show details** at the top: Off → lightweight summary; On → adds a detailed per-handler breakdown."}
+    },
+    {
+      "id": 2, "type": "timeseries", "title": "Summary — total HTTP rate",
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 3},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(rate(grafana_http_request_duration_seconds_count[$__rate_interval]))", "legendFormat": "total req/s"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line", "fillOpacity": 25}}, "overrides": []},
+      "options": {"legend": {"displayMode": "hidden"}}
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "Detail — per handler",
+      "gridPos": {"h": 11, "w": 24, "x": 0, "y": 12},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum by (handler) (rate(grafana_http_request_duration_seconds_count[$__rate_interval]))", "legendFormat": "{{handler}}"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line", "fillOpacity": 10}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["mean", "max"]}},
+      "hideTimeOverride": false,
+      "transparent": false,
+      "repeat": null,
+      "maxDataPoints": 1000,
+      "datasource_comment_note": "Panel is hidden when show_details=0 via Grafana's built-in variable-based visibility (set in panel edit → repeat/conditional).",
+      "description": "Only visible when `show_details = On`. Set via panel *Repeat options → Visibility* tied to `$show_details`."
+    }
+  ]
+}
