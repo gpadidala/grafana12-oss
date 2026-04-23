@@ -1,0 +1,114 @@
+{
+  "uid": "v12-admin-angular",
+  "title": "Grafana 12 Admin — Angular & Plugin Deep Audit",
+  "description": "The definitive pre-cutover plugin audit. Pulls /api/plugins live; highlights Angular flags, unsigned plugins, missing grafanaDependency. 12.0 removed Angular entirely and enforces grafanaDependency — any red cell here blocks the upgrade.",
+  "tags": ["grafana-12", "admin", "plugins", "angular", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "1m",
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_api",  "type": "datasource", "query": "yesoreyeram-infinity-datasource", "refresh": 1, "current": {"text": "Grafana API (Infinity)", "value": "grafana-api"}},
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 5, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### What this dashboard checks\n\n| Check | Why it matters | Pass state |\n|---|---|---|\n| Angular-detected plugins | 12.0 removed Angular. Any `angularDetected=true` plugin stops loading | Zero rows in *Angular* table |\n| Unsigned plugins | 12 refuses to load unsigned unless explicitly allowed | All `signatureType ∈ {grafana, commercial, community}` |\n| Missing `grafanaDependency` | 12.0 re-enforced the compat check; missing metadata = no install | Every row has a version range |\n| Plugin load errors | Any runtime error hides the plugin | `/api/plugins/errors` returns `[]` |"}
+    },
+    {
+      "id": 2, "type": "table", "title": "🔴 Angular plugins (MUST be empty)",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 5},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "url",
+        "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
+        "parser": "backend", "root_selector": "",
+        "columns": [
+          {"selector": "id", "text": "Plugin ID"},
+          {"selector": "name", "text": "Name"},
+          {"selector": "type", "text": "Type"},
+          {"selector": "info.version", "text": "Version"},
+          {"selector": "angularDetected", "text": "Angular", "type": "boolean"}
+        ],
+        "filters": [{"field": "Angular", "operator": "equals", "value": ["true"]}]
+      }],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "color-background"}, "filterable": true}, "color": {"mode": "fixed", "fixedColor": "red"}},
+        "overrides": [{"matcher": {"id": "byName", "options": "Angular"}, "properties": [{"id": "mappings", "value": [{"type": "value", "options": {"true": {"color": "red", "text": "ANGULAR — blocker"}}}]}]}]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"]}}
+    },
+    {
+      "id": 3, "type": "table", "title": "⚠ Unsigned or invalid-signature plugins",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 13},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "url",
+        "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
+        "parser": "backend", "root_selector": "",
+        "columns": [
+          {"selector": "id", "text": "Plugin"},
+          {"selector": "signatureType", "text": "Signature"},
+          {"selector": "info.version", "text": "Version"}
+        ],
+        "filters": [{"field": "Signature", "operator": "notin", "value": ["grafana", "commercial", "community"]}]
+      }],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [{"matcher": {"id": "byName", "options": "Signature"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"unsigned": {"color": "red"}, "invalid": {"color": "red"}}}]}]}]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"]}}
+    },
+    {
+      "id": 4, "type": "table", "title": "Plugin load errors (/api/plugins/errors)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 13},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "url",
+        "url": "/api/plugins/errors", "url_options": {"method": "GET"},
+        "parser": "backend", "root_selector": "",
+        "columns": [
+          {"selector": "pluginId", "text": "Plugin"},
+          {"selector": "errorCode", "text": "Error"}
+        ]
+      }],
+      "fieldConfig": {"defaults": {"custom": {"cellOptions": {"type": "color-background"}, "filterable": true}, "color": {"mode": "fixed", "fixedColor": "red"}}, "overrides": []},
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"]}}
+    },
+    {
+      "id": 5, "type": "table", "title": "Full plugin inventory — all installed plugins",
+      "gridPos": {"h": 16, "w": 24, "x": 0, "y": 21},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "url",
+        "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
+        "parser": "backend", "root_selector": "",
+        "columns": [
+          {"selector": "id", "text": "ID"},
+          {"selector": "name", "text": "Name"},
+          {"selector": "type", "text": "Type"},
+          {"selector": "info.version", "text": "Version"},
+          {"selector": "category", "text": "Category"},
+          {"selector": "signatureType", "text": "Signature"},
+          {"selector": "angularDetected", "text": "Angular"},
+          {"selector": "state", "text": "State"}
+        ]
+      }],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "Angular"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"true": {"color": "red", "text": "Y"}, "false": {"color": "green", "text": "N"}}}]}, {"id": "custom.width", "value": 80}]},
+          {"matcher": {"id": "byName", "options": "Signature"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"grafana": {"color": "green"}, "commercial": {"color": "green"}, "community": {"color": "blue"}, "valid": {"color": "green"}, "unsigned": {"color": "red"}, "invalid": {"color": "red"}, "internal": {"color": "purple"}}}]}, {"id": "custom.width", "value": 120}]},
+          {"matcher": {"id": "byName", "options": "Type"}, "properties": [{"id": "custom.width", "value": 100}]},
+          {"matcher": {"id": "byName", "options": "Version"}, "properties": [{"id": "custom.width", "value": 100}]},
+          {"matcher": {"id": "byName", "options": "State"}, "properties": [{"id": "custom.width", "value": 100}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"]}}
+    }
+  ]
+}

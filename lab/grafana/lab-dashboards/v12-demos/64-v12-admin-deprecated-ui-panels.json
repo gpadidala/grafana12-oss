@@ -1,0 +1,55 @@
+{
+  "uid": "v12-admin-deprecated-panels",
+  "title": "Grafana 12 Admin — Deprecated UI Panel Inventory",
+  "description": "Tracks every UI panel type that either got REMOVED (Angular: graph, singlestat, table-old, grafana-worldmap-panel, grafana-piechart-panel pre-React) or DEPRECATED (datagrid in 12.4 → removal in 13.0). Every count here must read zero before cutover, otherwise the panel renders blank or force-migrates on load.",
+  "tags": ["grafana-12", "admin", "panels", "deprecated", "angular", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "1m",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_api", "type": "datasource", "query": "yesoreyeram-infinity-datasource", "refresh": 1, "current": {"text": "Grafana API (Infinity)", "value": "grafana-api"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 7, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Removed & deprecated panel types (11.6.4 → 12.4.1)\n\n| Panel type | Status | Replacement |\n|---|---|---|\n| `graph` (old) | 🔴 Removed (Angular) in 12.0 | `timeseries` |\n| `singlestat` | 🔴 Removed (Angular) in 12.0 | `stat` |\n| `table-old` | 🔴 Removed (Angular) in 12.0 | `table` (react-data-grid) |\n| `grafana-worldmap-panel` | 🔴 Removed (Angular) in 12.0 | `geomap` |\n| `grafana-piechart-panel` (Angular version) | 🔴 Removed in 12.0 | core `piechart` |\n| `datagrid` | 🟠 Deprecated in 12.4, removed in 13.0 | `table` (react-data-grid) |\n\nThe tiles below query every dashboard via `/api/search` + inspect panel types. Any non-zero count → run `migration/20_angular_purge.py` or `migration/rewrite_datagrid_to_table.py` from the repo."}
+    },
+    {
+      "id": 2, "type": "text", "title": "How to scan programmatically",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 7},
+      "options": {"mode": "markdown", "content": "```bash\n# Find every deprecated panel type on the live instance\nfor uid in $(gapi ${URL} /api/search?type=dash-db | jq -r '.[].uid'); do\n  gapi ${URL} /api/dashboards/uid/${uid} \\\n    | jq -r --arg uid \"$uid\" '\n        .dashboard.panels // []\n        | .[]\n        | select(.type | IN(\n            \"graph\",\"singlestat\",\"table-old\",\n            \"grafana-worldmap-panel\",\"grafana-piechart-panel\",\n            \"datagrid\"))\n        | \"\\($uid)\\t\\(.type)\\t\\(.title)\"'\ndone | tee out/audit/deprecated-panels.tsv\n```\n\nThe repo's `audit/find_panel_type.py` and `audit/schema_diff.py` do the same thing and write structured JSON."}
+    },
+    {
+      "id": 3, "type": "text", "title": "Repo entrypoints",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 7},
+      "options": {"mode": "markdown", "content": "### Scan\n```bash\npython3 audit/find_panel_type.py --type graph --dashboards ./dashboards\npython3 audit/find_panel_type.py --type singlestat --dashboards ./dashboards\npython3 audit/find_panel_type.py --type table-old --dashboards ./dashboards\npython3 audit/find_panel_type.py --type datagrid --dashboards ./dashboards\n```\n\n### Remediate\n```bash\n# Angular panels → React core\npython3 migration/20_angular_purge.py\n\n# Datagrid → Table (react-data-grid)\npython3 migration/rewrite_datagrid_to_table.py \\\n  --panels out/audit/18-datagrid-panels.json\n```\n\n### Validate\n`make validate` runs the consolidated 30-item gate; item #1, #14 and #18 all read from these audit outputs."}
+    },
+    {
+      "id": 4, "type": "table", "title": "Live dashboard inventory (click URL → check panel types)",
+      "gridPos": {"h": 18, "w": 24, "x": 0, "y": 17},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "url",
+        "url": "/api/search?type=dash-db&limit=5000", "url_options": {"method": "GET"},
+        "parser": "backend", "root_selector": "",
+        "columns": [
+          {"selector": "uid", "text": "UID"},
+          {"selector": "title", "text": "Title"},
+          {"selector": "folderTitle", "text": "Folder"},
+          {"selector": "url", "text": "Open"}
+        ]
+      }],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "Open"}, "properties": [{"id": "links", "value": [{"title": "Inspect panel types", "url": "${__value.text}", "targetBlank": true}]}, {"id": "custom.width", "value": 120}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm"}
+    }
+  ]
+}

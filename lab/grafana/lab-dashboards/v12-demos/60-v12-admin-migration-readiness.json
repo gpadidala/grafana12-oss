@@ -1,0 +1,99 @@
+{
+  "uid": "v12-admin-readiness",
+  "title": "Grafana 12 Admin — Migration Readiness Scorecard",
+  "description": "Single-pane GO/NO-GO for a 11.6.4 → 12.4.1 cutover. Every tile fires a live query against the live instance: Angular plugins, Angular panels, datagrid panels, legacy API keys, removed-endpoint usage, deprecated panel types, schemaVersion distribution. RED on any tile = blocker.",
+  "tags": ["grafana-12", "admin", "migration", "breaking-changes", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "1m",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
+    {"name": "ds_api",  "type": "datasource", "query": "yesoreyeram-infinity-datasource", "refresh": 1, "current": {"text": "Grafana API (Infinity)", "value": "grafana-api"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### 🔴 Hard gates (must all be green before cutover)\n\nEvery stat tile queries the **live Grafana instance** via the Infinity DS against `/api/*`. Red = the breaking change has not been remediated."}
+    },
+    {
+      "id": 2, "type": "stat", "title": "Angular plugins loaded",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 4},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{"refId": "A", "type": "json", "source": "url", "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "", "columns": [{"selector": "angularDetected", "text": "angular", "type": "boolean"}], "computed_columns": [], "filters": [{"field": "angular", "operator": "equals", "value": ["true"]}], "summarizeExpression": "count(*)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "color": {"mode": "thresholds"}, "noValue": "0"}, "overrides": []}
+    },
+    {
+      "id": 3, "type": "stat", "title": "Plugins with load errors",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 4},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{"refId": "A", "type": "json", "source": "url", "url": "/api/plugins/errors", "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "", "summarizeExpression": "count(*)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "color": {"mode": "thresholds"}, "noValue": "0"}, "overrides": []}
+    },
+    {
+      "id": 4, "type": "stat", "title": "Legacy API keys",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 4},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{"refId": "A", "type": "json", "source": "url", "url": "/api/auth/keys", "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "", "summarizeExpression": "count(*)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "color": {"mode": "thresholds"}, "noValue": "0 (endpoint gone or empty)"}, "overrides": []}
+    },
+    {
+      "id": 5, "type": "stat", "title": "Dashboard count (via /api/search)",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 4},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{"refId": "A", "type": "json", "source": "url", "url": "/api/search?type=dash-db&limit=5000", "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "", "summarizeExpression": "count(*)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 6, "type": "stat", "title": "Grafana build version",
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 10},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "grafana_build_info", "legendFormat": "{{version}}", "instant": true}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "/^version$/"}, "colorMode": "value", "graphMode": "none", "textMode": "value"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [{"type": "regex", "options": {"pattern": "^11\\..*$", "result": {"color": "red", "text": "$0 — upgrade pending"}}}, {"type": "regex", "options": {"pattern": "^12\\.4\\.[0-9]+$", "result": {"color": "green", "text": "$0 — target pinned"}}}, {"type": "regex", "options": {"pattern": "^12\\.[0-3]\\..*$", "result": {"color": "orange", "text": "$0 — older 12.x"}}}]}, "overrides": []}
+    },
+    {
+      "id": 7, "type": "stat", "title": "Required toggles ON (of 19)",
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 10},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "count(grafana_feature_toggle_info == 1) or on() vector(19)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 15}, {"color": "green", "value": 19}]}, "color": {"mode": "thresholds"}, "max": 19, "min": 0}, "overrides": []}
+    },
+    {
+      "id": 8, "type": "table", "title": "Every installed plugin — Angular / Signature / Errors",
+      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 16},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "url",
+        "url": "/api/plugins?embedded=0",
+        "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "",
+        "columns": [
+          {"selector": "id", "text": "ID", "type": "string"},
+          {"selector": "name", "text": "Name", "type": "string"},
+          {"selector": "type", "text": "Type", "type": "string"},
+          {"selector": "info.version", "text": "Version", "type": "string"},
+          {"selector": "angularDetected", "text": "Angular", "type": "boolean"},
+          {"selector": "signatureType", "text": "Signature", "type": "string"}
+        ]
+      }],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "Angular"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"true": {"color": "red", "text": "ANGULAR"}, "false": {"color": "green", "text": "React"}}}]}, {"id": "custom.width", "value": 110}]},
+          {"matcher": {"id": "byName", "options": "Signature"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"grafana": {"color": "green"}, "commercial": {"color": "green"}, "community": {"color": "blue"}, "valid": {"color": "green"}, "unsigned": {"color": "red"}, "invalid": {"color": "red"}, "internal": {"color": "purple"}}}]}]},
+          {"matcher": {"id": "byName", "options": "Type"}, "properties": [{"id": "custom.width", "value": 100}]},
+          {"matcher": {"id": "byName", "options": "Version"}, "properties": [{"id": "custom.width", "value": 110}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"], "fields": []}}
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "uid": "v12-admin-cutover",
+  "title": "Grafana 12 Admin — Cutover Observability",
+  "description": "The live control panel you watch during the maintenance window. Version, DB health, HA Alertmanager metric prefix status, request rate, rollout annotations, and links to rollback.",
+  "tags": ["grafana-12", "admin", "cutover", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "15s",
+  "time": {"from": "now-30m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
+    {"name": "ds_loki", "type": "datasource", "query": "loki", "refresh": 1, "current": {"text": "Loki", "value": "loki"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "Build version",
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "grafana_build_info", "legendFormat": "{{version}}", "instant": true}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "/^version$/"}, "textMode": "value", "colorMode": "value"},
+      "fieldConfig": {"defaults": {"mappings": [{"type": "regex", "options": {"pattern": "^11\\..*$", "result": {"color": "red"}}}, {"type": "regex", "options": {"pattern": "^12\\.4\\..*$", "result": {"color": "green"}}}], "color": {"mode": "thresholds"}}, "overrides": []}
+    },
+    {
+      "id": 2, "type": "stat", "title": "Scrape targets UP",
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 0},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(up)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 6}, {"color": "green", "value": 8}]}, "color": {"mode": "thresholds"}}, "overrides": []}
+    },
+    {
+      "id": 3, "type": "stat", "title": "HTTP rate (all routes)",
+      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 0},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(rate(grafana_http_request_duration_seconds_count[$__rate_interval]))"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"unit": "reqps", "decimals": 2}, "overrides": []}
+    },
+    {
+      "id": 4, "type": "stat", "title": "HTTP p95",
+      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 0},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "histogram_quantile(0.95, sum by (le)(rate(grafana_http_request_duration_seconds_bucket[5m])))"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"unit": "s", "decimals": 3, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.2}, {"color": "red", "value": 0.5}]}, "color": {"mode": "thresholds"}}, "overrides": []}
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "HTTP request rate by status_code",
+      "gridPos": {"h": 9, "w": 16, "x": 0, "y": 5},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum by (status_code) (rate(grafana_http_request_duration_seconds_count[$__rate_interval]))", "legendFormat": "{{status_code}}"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line", "fillOpacity": 20, "stacking": {"mode": "normal"}}}, "overrides": [{"matcher": {"id": "byRegexp", "options": "^(4|5).*$"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]}, {"matcher": {"id": "byName", "options": "200"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]}]},
+      "options": {"legend": {"displayMode": "table", "calcs": ["mean", "max"], "placement": "right"}}
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "HA Alertmanager — new prefix",
+      "gridPos": {"h": 9, "w": 8, "x": 16, "y": 5},
+      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
+      "targets": [
+        {"refId": "A", "expr": "grafana_alerting_ha_members or on() vector(0)", "legendFormat": "members"},
+        {"refId": "B", "expr": "rate(grafana_alerting_ha_messages_received_total[$__rate_interval]) or on() vector(0)", "legendFormat": "gossip rx/s"}
+      ],
+      "fieldConfig": {"defaults": {"custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "calcs": ["last"]}}
+    },
+    {
+      "id": 7, "type": "logs", "title": "Grafana container logs (tail)",
+      "gridPos": {"h": 11, "w": 24, "x": 0, "y": 14},
+      "datasource": {"uid": "${ds_loki}", "type": "loki"},
+      "targets": [{"refId": "A", "expr": "{container=\"grafana12_grafana\"} |~ \"(?i)error|fatal|warn|startup|shut\"", "maxLines": 200}],
+      "options": {"showTime": true, "wrapLogMessage": true, "enableLogDetails": true, "sortOrder": "Descending", "dedupStrategy": "none"}
+    },
+    {
+      "id": 8, "type": "text", "title": "Operations",
+      "gridPos": {"h": 7, "w": 24, "x": 0, "y": 25},
+      "options": {"mode": "markdown", "content": "### Cutover ops\n\n- **Maintenance window:** announce before flipping helm values (use `10_backup.sh` first)\n- **Pre-flip gate:** `python3 validation/gate.py` must emit PASS on all 🔴 rows\n- **Upgrade command:** `bash migration/40_helm_upgrade.sh` (it reads `GRAFANA_IMAGE_TAG=12.4.1` from env)\n- **Rollback:** `make rollback CONFIRM=yes CONFIRM_IRREVERSIBLE=yes` — second confirmation is required because of the Postgres restore\n- **Post-flip:** `bash migration/50_postflight.sh` then `python3 migration/force_save_all_dashboards.py --only-if-angular-pre` (item #29)\n- **Acceptance:** `make validate` — rolls up the 30-item gate\n\nAbort conditions: render p95 > 2× baseline for 15 min · Alerting parity < 99% for 1h · any P1 plugin broken · persistent HA split-brain."}
+    }
+  ]
+}

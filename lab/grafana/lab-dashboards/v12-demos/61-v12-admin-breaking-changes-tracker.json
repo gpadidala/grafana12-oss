@@ -1,0 +1,25 @@
+{
+  "uid": "v12-admin-bct",
+  "title": "Grafana 12 Admin — Breaking Changes Tracker (30-item playbook)",
+  "description": "Every one of the 30 breaking / behavioral / deprecation items from docs/01-breaking-changes-matrix.md as a live row. Severity color-coded; status derived from the same audit artifacts the CI gate uses. Click any row title to jump to the Detect / Fix / Validate script for that item.",
+  "tags": ["grafana-12", "admin", "breaking-changes", "playbook", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "1m",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 24, "w": 12, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "## 🔴 Hard breaking (12 MUST)\n\n| # | Item | Where it bites | Playbook |\n|---|---|---|---|\n| 1 | AngularJS removed | Core panels + 3rd-party Angular plugins stop loading | [§1](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#1--angularjs-framework-fully-removed-120) |\n| 2 | `editors_can_admin` removed | Grafana starts but flag is ignored | [§2](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#2--editors_can_admin-config-option-removed-120) |\n| 3 | Legacy API-key actions removed | Provisioning grants `apikeys:*` fail silently | [§3](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#3--legacy-api-keys--actions-removed-123) |\n| 4 | Provisioning full-replace ACL | Partial permission YAML wipes everyone else | [§4](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#4--provisioning-enforces-full-replace-permission-model-123) |\n| 5 | Creator no longer auto-admin | Users lose edit on their own top-level folders | [§5](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#5--top-level-folder-creator-no-longer-auto-admin-123) |\n| 6 | Dynamic dashboards v2 one-way | Rollback requires DB restore | [§6](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#6--dynamic-dashboards-schema-v2-migration-is-one-way-120-re-emphasized-124) |\n| 7 | Old UI extension APIs gone | Custom app plugins fail to register UI | [§7](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#7--old-ui-extension-apis-removed-120) |\n| 8 | Plugin `grafanaDependency` enforced | `grafana-cli install` refuses incompatible | [§8](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#8--plugin-cli-grafanadependency-enforcement-120) |\n| 9 | DS UID format strict | Provisioning loads reject non-conformant UIDs | [§9](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#9--data-source-uid-format-enforcement-tightened-120) |\n| 10 | Tempo Aggregate-by removed | Old trace metric dashboards blank | [§10](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#10--tempo--aggregate-by--metrics-summary-api-removed-120) |\n| 11 | HA AM metric prefix changed | SLO dashboards drop to zero | [§11](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#11--ha-alertmanager-cluster-metrics-prefix-changed-124) |\n| 12 | Scenes mandatory | Pre-Scenes DOM tests break | [§12](https://github.com/gpadidala/grafana12-oss/blob/main/docs/01-breaking-changes-matrix.md#12--scenes-powered-dashboard-architecture-mandatory-120-hard-locked-in-130) |"},
+      "transparent": false
+    },
+    {
+      "id": 2, "type": "text", "title": "",
+      "gridPos": {"h": 24, "w": 12, "x": 12, "y": 0},
+      "options": {"mode": "markdown", "content": "## 🟠 Behavioral — will surprise users\n\n| # | Item |\n|---|---|\n| 13 | Google OAuth HD validation |\n| 14 | Table viz → react-data-grid (GA 12.2) |\n| 15 | `cache_size` metric split |\n| 16 | Legacy single-tenant AM endpoints deprecated |\n| 17 | Short URLs now persistent — first-boot storage migration |\n| 18 | Datagrid viz deprecated (12.4, removed 13.0) |\n| 19 | Visualization Suggestions = default panel picker |\n| 20 | Gauge redesign: Circular + Arc `Style` option |\n| 21 | Correlations `org_id=0` removed |\n| 22 | Public dashboard annotations hardened |\n| 23 | TraceView HTML sanitized |\n\n## 🟡 Deprecations — fix before 13.0\n\n| # | Item |\n|---|---|\n| 24 | `/api` → `/apis` namespaced endpoints |\n| 25 | Numeric DS `id` deprecated — use `uid` |\n| 26 | react-router v5 in custom plugins |\n| 27 | `@grafana/e2e` (Cypress) → `@grafana/plugin-e2e` |\n| 28 | `ArrayVector` / `Vector` interfaces |\n\n## ✅ Post-cutover MUST\n\n| # | Item |\n|---|---|\n| 29 | Force-save every auto-migrated Angular dashboard |\n| 30 | All 19 feature toggles `enabled=true` |\n\n---\n\n### Automation\n\n- **`make audit`** — runs every Detect in this list\n- **`make validate`** — runs every Validate + emits [go-no-go.html](/d/v12-admin-readiness)\n- **`validation/gate.py`** — consolidated 30-row HTML gate"}
+    }
+  ]
+}

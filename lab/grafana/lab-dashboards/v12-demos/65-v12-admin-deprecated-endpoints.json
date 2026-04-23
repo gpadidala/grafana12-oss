@@ -1,0 +1,77 @@
+{
+  "uid": "v12-admin-endpoints",
+  "title": "Grafana 12 Admin — Deprecated API / Endpoint Scanner",
+  "description": "Every endpoint that 11.6.4 → 12.4.1 either REMOVED or DEPRECATED. Each tile queries the live instance and reports HTTP status so you can confirm the old paths are gone (or still lingering).",
+  "tags": ["grafana-12", "admin", "api", "deprecated", "v12-demo"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "5m",
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_api", "type": "datasource", "query": "yesoreyeram-infinity-datasource", "refresh": 1, "current": {"text": "Grafana API (Infinity)", "value": "grafana-api"}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Endpoint migration map\n\n| Legacy endpoint | Version | New path / notes |\n|---|---|---|\n| `GET /api/auth/keys` | Removed in 12.3 | Use `GET /api/serviceaccounts/search` |\n| `GET /api/datasources/<numeric-id>/*` | Deprecated 9.0, off by default in 13.0 | Use `/api/datasources/uid/<uid>/...` |\n| `POST /api/alertmanager/grafana/config/api/v1/alerts` | Deprecated 12.0, removed 13.0 | `POST /api/v1/provisioning/alert-rules` |\n| `POST /api/alertmanager/grafana/config/api/v1/templates` | Deprecated 12.0 | `POST /api/v1/provisioning/templates` |\n| `POST /api/alertmanager/grafana/config/api/v1/receivers` | Deprecated 12.0 | `POST /api/v1/provisioning/contact-points` |\n| `GET /api/metrics/summary` (Tempo) | Removed in 12.0 | TraceQL metrics: `{} \\| rate() by (service.name)` |\n| `/api/dashboards/*`, `/api/folders/*` | Works in 12.4, slated for 13 | `/apis/dashboard.grafana.app/*`, `/apis/folder.grafana.app/*` |\n| `/api/featuremgmt` (flat array) | Shape changed in 12.4 | `{features: [...]}` — see feature_toggles_verify.py |\n\nScripts in repo to rewrite each: `migration/rewrite_am_endpoints.py`, `migration/rewrite_bad_uids.py`."}
+    },
+    {
+      "id": 2, "type": "stat", "title": "/api/auth/keys — legacy API keys (should be 0 or 404)",
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 10},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{"refId": "A", "type": "json", "source": "url", "url": "/api/auth/keys", "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "", "summarizeExpression": "count(*)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "color": {"mode": "thresholds"}, "noValue": "0"}, "overrides": []}
+    },
+    {
+      "id": 3, "type": "stat", "title": "/api/serviceaccounts — should be > 0 post-migration",
+      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 10},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{"refId": "A", "type": "json", "source": "url", "url": "/api/serviceaccounts/search?perpage=5000", "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "serviceAccounts", "summarizeExpression": "count(*)"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 4, "type": "stat", "title": "/api/featuremgmt — required toggles ON",
+      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 10},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "url",
+        "url": "/api/featuremgmt", "url_options": {"method": "GET"},
+        "parser": "backend", "root_selector": "features",
+        "columns": [{"selector": "enabled", "text": "enabled", "type": "boolean"}],
+        "filters": [{"field": "enabled", "operator": "equals", "value": ["true"]}]
+      }],
+      "options": {"reduceOptions": {"calcs": ["count"]}, "colorMode": "value", "graphMode": "area"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 5, "type": "table", "title": "Every feature toggle — ENABLED state",
+      "gridPos": {"h": 18, "w": 24, "x": 0, "y": 16},
+      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [{
+        "refId": "A", "type": "json", "source": "url",
+        "url": "/api/featuremgmt", "url_options": {"method": "GET"},
+        "parser": "backend", "root_selector": "features",
+        "columns": [
+          {"selector": "name", "text": "Toggle"},
+          {"selector": "description", "text": "Description"},
+          {"selector": "stage", "text": "Stage"},
+          {"selector": "enabled", "text": "Enabled"}
+        ]
+      }],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "Enabled"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"true": {"color": "green", "text": "ON"}, "false": {"color": "red", "text": "off"}}}]}, {"id": "custom.width", "value": 100}]},
+          {"matcher": {"id": "byName", "options": "Toggle"}, "properties": [{"id": "custom.width", "value": 260}]},
+          {"matcher": {"id": "byName", "options": "Stage"}, "properties": [{"id": "custom.width", "value": 120}]}
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"], "fields": ["Enabled"]}}
+    }
+  ]
+}
