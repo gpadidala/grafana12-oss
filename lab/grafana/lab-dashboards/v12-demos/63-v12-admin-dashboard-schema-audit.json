@@ -1,72 +1,317 @@
 {
   "uid": "v12-admin-schema",
-  "title": "Grafana 12 Admin — Dashboard Schema & Scenes Migration Audit",
-  "description": "Scenes is mandatory in 12.0 and the v2 layout engine migration is ONE-WAY (12.4, playbook §6). Before you flip `dashboardsNewLayouts` / `kubernetesDashboards`, you want every dashboard's schemaVersion mapped and a fresh DB backup. This dashboard inventories every dashboard via /api/search and /api/dashboards/uid/<uid>.",
-  "tags": ["grafana-12", "admin", "schema", "scenes", "v12-demo"],
+  "title": "Grafana 12 Admin \u2014 Dashboard Schema & Scenes Migration Audit",
+  "description": "Scenes is mandatory in 12.0 and the v2 layout engine migration is ONE-WAY (12.4, playbook \u00a76). Before you flip `dashboardsNewLayouts` / `kubernetesDashboards`, you want every dashboard's schemaVersion mapped and a fresh DB backup. This dashboard inventories every dashboard via /api/search and /api/dashboards/uid/<uid>.",
+  "tags": [
+    "grafana-12",
+    "admin",
+    "schema",
+    "scenes",
+    "v12-demo"
+  ],
   "schemaVersion": 40,
   "version": 1,
   "editable": true,
   "refresh": "1m",
-  "time": {"from": "now-15m", "to": "now"},
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
   "timepicker": {},
-  "templating": {"list": [
-    {"name": "ds_api", "type": "datasource", "query": "yesoreyeram-infinity-datasource", "refresh": 1, "current": {"text": "Grafana API (Infinity)", "value": "grafana-api"}}
-  ]},
+  "templating": {
+    "list": [
+      {
+        "name": "ds_api",
+        "type": "datasource",
+        "query": "yesoreyeram-infinity-datasource",
+        "refresh": 1,
+        "current": {
+          "text": "Grafana API (Infinity)",
+          "value": "grafana-api"
+        }
+      }
+    ]
+  },
   "panels": [
     {
-      "id": 1, "type": "text", "title": "",
-      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
-      "options": {"mode": "markdown", "content": "### Why this matters\n\n**Scenes-powered runtime** has been the only runtime since 12.0 (the flag was removed in 13). **Dynamic Dashboards v2 layouts** (12.4 public preview, toggles `kubernetesDashboards` + `dashboardsNewLayouts`) silently rewrite the dashboard JSON to v2 — and there is **no path back**. The rollback playbook mandates a DB restore.\n\n### Safe sequence\n\n1. Freeze dashboard authoring\n2. Export every dashboard JSON pre-flip (the table below IS the inventory)\n3. Take a Postgres `pg_dump` that is ≤ 24h old before `40_helm_upgrade.sh` (the gate enforces this)\n4. Flip the toggles\n5. Force-save every dashboard (`migration/force_save_all_dashboards.py`)"}
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Why this matters\n\n**Scenes-powered runtime** has been the only runtime since 12.0 (the flag was removed in 13). **Dynamic Dashboards v2 layouts** (12.4 public preview, toggles `kubernetesDashboards` + `dashboardsNewLayouts`) silently rewrite the dashboard JSON to v2 \u2014 and there is **no path back**. The rollback playbook mandates a DB restore.\n\n### Safe sequence\n\n1. Freeze dashboard authoring\n2. Export every dashboard JSON pre-flip (the table below IS the inventory)\n3. Take a Postgres `pg_dump` that is \u2264 24h old before `40_helm_upgrade.sh` (the gate enforces this)\n4. Flip the toggles\n5. Force-save every dashboard (`migration/force_save_all_dashboards.py`)"
+      }
     },
     {
-      "id": 2, "type": "stat", "title": "Dashboards total",
-      "gridPos": {"h": 5, "w": 8, "x": 0, "y": 6},
-      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
-      "targets": [{"refId": "A", "type": "json", "source": "url", "url": "/api/search?type=dash-db&limit=5000", "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "", "summarizeExpression": "count(*)"}],
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
-    },
-    {
-      "id": 3, "type": "stat", "title": "Folders",
-      "gridPos": {"h": 5, "w": 8, "x": 8, "y": 6},
-      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
-      "targets": [{"refId": "A", "type": "json", "source": "url", "url": "/api/folders?limit=5000", "url_options": {"method": "GET"}, "parser": "backend", "root_selector": "", "summarizeExpression": "count(*)"}],
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
-    },
-    {
-      "id": 4, "type": "stat", "title": "Backup freshness gate",
-      "gridPos": {"h": 5, "w": 8, "x": 16, "y": 6},
-      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
-      "targets": [{"refId": "A", "type": "json", "source": "inline", "data": "[{\"status\": \"Run 10_backup.sh before flipping v2 toggles\"}]", "parser": "backend", "root_selector": "", "columns": [{"selector": "status", "text": "Status"}]}],
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "/^Status$/"}, "colorMode": "value", "graphMode": "none", "textMode": "value"},
-      "fieldConfig": {"defaults": {"color": {"mode": "fixed", "fixedColor": "orange"}}, "overrides": []}
-    },
-    {
-      "id": 5, "type": "table", "title": "Every dashboard — UID, title, folder, tags",
-      "gridPos": {"h": 20, "w": 24, "x": 0, "y": 11},
-      "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
-      "targets": [{
-        "refId": "A", "type": "json", "source": "url",
-        "url": "/api/search?type=dash-db&limit=5000", "url_options": {"method": "GET"},
-        "parser": "backend", "root_selector": "",
-        "columns": [
-          {"selector": "uid", "text": "UID"},
-          {"selector": "title", "text": "Title"},
-          {"selector": "folderTitle", "text": "Folder"},
-          {"selector": "tags", "text": "Tags"},
-          {"selector": "url", "text": "URL"}
-        ]
-      }],
+      "id": 2,
+      "type": "stat",
+      "title": "Dashboards total",
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 6
+      },
+      "datasource": {
+        "uid": "${ds_api}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/search?type=dash-db&limit=5000",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "root_selector": ""
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "count"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
       "fieldConfig": {
-        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Folders",
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 6
+      },
+      "datasource": {
+        "uid": "${ds_api}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/folders?limit=5000",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "root_selector": ""
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "count"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Backup freshness gate",
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 6
+      },
+      "datasource": {
+        "uid": "${ds_api}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "inline",
+          "data": "[{\"status\": \"Run 10_backup.sh before flipping v2 toggles\"}]",
+          "parser": "backend",
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "status",
+              "text": "Status"
+            }
+          ]
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Status$/"
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Every dashboard \u2014 UID, title, folder, tags",
+      "gridPos": {
+        "h": 20,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "datasource": {
+        "uid": "${ds_api}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/search?type=dash-db&limit=5000",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "uid",
+              "text": "UID"
+            },
+            {
+              "selector": "title",
+              "text": "Title"
+            },
+            {
+              "selector": "folderTitle",
+              "text": "Folder"
+            },
+            {
+              "selector": "tags",
+              "text": "Tags"
+            },
+            {
+              "selector": "url",
+              "text": "URL"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
         "overrides": [
-          {"matcher": {"id": "byName", "options": "UID"}, "properties": [{"id": "custom.width", "value": 200}]},
-          {"matcher": {"id": "byName", "options": "Folder"}, "properties": [{"id": "custom.width", "value": 220}]},
-          {"matcher": {"id": "byName", "options": "URL"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "auto"}}, {"id": "links", "value": [{"title": "Open dashboard", "url": "${__value.text}", "targetBlank": true}]}, {"id": "custom.width", "value": 120}]}
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "UID"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Folder"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 220
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "URL"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open dashboard",
+                    "url": "${__value.text}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
         ]
       },
-      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": true, "reducer": ["count"]}}
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": true,
+          "reducer": [
+            "count"
+          ]
+        }
+      }
     }
   ]
 }
