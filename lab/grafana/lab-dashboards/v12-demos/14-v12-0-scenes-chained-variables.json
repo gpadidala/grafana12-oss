@@ -1,48 +1,259 @@
 {
   "uid": "v12-0-scenes-vars",
-  "title": "Grafana 12.0 — Scenes Chained Variables",
-  "description": "Scenes is the mandatory dashboard runtime as of 12.0. This demo shows Scenes' chained-variable evaluation — `$job` drives `$instance` drives the panel queries, all re-rendering reactively.",
-  "tags": ["grafana-12", "v12.0", "scenes", "variables", "v12-demo"],
+  "title": "Grafana 12.0 \u2014 Scenes Chained Variables",
+  "description": "Scenes is the mandatory dashboard runtime as of 12.0. This demo shows Scenes' chained-variable evaluation \u2014 `$job` drives `$instance` drives the panel queries, all re-rendering reactively.",
+  "tags": [
+    "grafana-12",
+    "v12.0",
+    "scenes",
+    "variables",
+    "v12-demo"
+  ],
   "schemaVersion": 40,
   "version": 1,
   "editable": true,
   "refresh": "30s",
-  "time": {"from": "now-15m", "to": "now"},
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
   "timepicker": {},
-  "templating": {"list": [
-    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
-    {"name": "job", "type": "query", "label": "Job", "datasource": {"uid": "${ds_prom}", "type": "prometheus"}, "query": {"query": "label_values(up, job)", "refId": "StandardVariableQuery"}, "refresh": 2, "multi": false, "current": {"text": "grafana", "value": "grafana"}, "hide": 0},
-    {"name": "instance", "type": "query", "label": "Instance (chained on $job)", "datasource": {"uid": "${ds_prom}", "type": "prometheus"}, "query": {"query": "label_values(up{job=\"$job\"}, instance)", "refId": "StandardVariableQuery"}, "refresh": 2, "multi": false, "hide": 0}
-  ]},
+  "templating": {
+    "list": [
+      {
+        "name": "ds_prom",
+        "type": "datasource",
+        "query": "prometheus",
+        "refresh": 1,
+        "current": {
+          "text": "Prometheus",
+          "value": "prom"
+        }
+      },
+      {
+        "name": "job",
+        "type": "query",
+        "label": "Job",
+        "datasource": {
+          "uid": "${ds_prom}",
+          "type": "prometheus"
+        },
+        "query": {
+          "query": "label_values(up, job)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "multi": false,
+        "current": {
+          "text": "grafana",
+          "value": "grafana"
+        },
+        "hide": 0
+      },
+      {
+        "name": "instance",
+        "type": "query",
+        "label": "Instance (chained on $job)",
+        "datasource": {
+          "uid": "${ds_prom}",
+          "type": "prometheus"
+        },
+        "query": {
+          "query": "label_values(up{job=\"$job\"}, instance)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "multi": false,
+        "hide": 0
+      }
+    ]
+  },
   "panels": [
     {
-      "id": 1, "type": "text", "title": "",
-      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
-      "options": {"mode": "markdown", "content": "### Scenes runtime (12.0)\n\nSwitch **Job** at the top — **Instance** re-populates automatically because Scenes re-evaluates every variable whose query references `$job`. Panel queries re-run only when their inputs change.\n\nThis is the declarative dataflow that `dashboardScene=true` enables. The flag is effectively mandatory in 12 and locked on in 13."}
+      "id": 10000,
+      "type": "text",
+      "title": "",
+      "tags": [
+        "demo-guide"
+      ],
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"padding:1.2rem;background:#1a2a3a;border-left:4px solid #5794f2;border-radius:6px;font-family:system-ui\"><div style=\"font-size:.75rem;letter-spacing:.18em;color:#8aa9d0;margin-bottom:.3rem\">DEMO GUIDE</div><div style=\"font-size:1.3rem;font-weight:600;color:#fff;margin-bottom:.6rem\">Grafana 12.0 \u2014 Scenes Chained Variables</div><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1rem\"><div><div style=\"font-weight:600;color:#5794f2;margin-bottom:.2rem\">\ud83c\udfaf What you're looking at</div><div style=\"font-size:.88rem;color:#dfe7f0\">Grafana 12 runs every dashboard on the Scenes runtime. Variables form a reactive graph: when $job changes, $instance re-evaluates, then the panels re-query. Only the panels whose inputs actually changed re-run.</div></div><div><div style=\"font-weight:600;color:#73bf69;margin-bottom:.2rem\">\ud83e\uddea Try this</div><div style=\"font-size:.88rem;color:#dfe7f0\">Switch the Job dropdown \u2014 Instance auto-populates. Pick an instance \u2014 every panel re-queries.</div></div></div><div style=\"margin-top:.8rem;padding-top:.6rem;border-top:1px solid #2d3e54;font-size:.85rem\">\ud83d\udcda <strong style=\"color:#fff\">Learn more</strong>: <a href=\"https://grafana.com/docs/grafana/latest/dashboards/variables/\" target=\"_blank\" style=\"color:#ff9830\">Grafana docs</a> \u00b7 <a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-0/\" target=\"_blank\" style=\"color:#ff9830\">v12 What's New</a></div></div>"
+      }
     },
     {
-      "id": 2, "type": "stat", "title": "up for `$job / $instance`",
-      "gridPos": {"h": 7, "w": 8, "x": 0, "y": 4},
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "up{job=\"$job\", instance=\"$instance\"}"}],
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"},
-      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}}], "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []}
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Scenes runtime (12.0)\n\nSwitch **Job** at the top \u2014 **Instance** re-populates automatically because Scenes re-evaluates every variable whose query references `$job`. Panel queries re-run only when their inputs change.\n\nThis is the declarative dataflow that `dashboardScene=true` enables. The flag is effectively mandatory in 12 and locked on in 13."
+      }
     },
     {
-      "id": 3, "type": "timeseries", "title": "scrape_duration_seconds — `$job`",
-      "gridPos": {"h": 7, "w": 16, "x": 8, "y": 4},
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "scrape_duration_seconds{job=\"$job\"}", "legendFormat": "{{instance}}"}],
-      "fieldConfig": {"defaults": {"unit": "s", "decimals": 4, "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 2}}, "overrides": []},
-      "options": {"legend": {"displayMode": "table", "calcs": ["mean", "last"], "placement": "right"}}
+      "id": 2,
+      "type": "stat",
+      "title": "up for `$job / $instance`",
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 11
+      },
+      "datasource": {
+        "uid": "${ds_prom}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "up{job=\"$job\", instance=\"$instance\"}"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "DOWN",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "UP",
+                  "color": "green"
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "description": "up for `$job / $instance`. Reference: https://grafana.com/docs/grafana/latest/dashboards/variables/"
     },
     {
-      "id": 4, "type": "timeseries", "title": "scrape_samples_scraped — `$job / $instance`",
-      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 11},
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "scrape_samples_scraped{job=\"$job\", instance=\"$instance\"}"}],
-      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 20}}, "overrides": []},
-      "options": {"legend": {"showLegend": false}, "tooltip": {"mode": "single"}}
+      "id": 3,
+      "type": "timeseries",
+      "title": "scrape_duration_seconds \u2014 `$job`",
+      "gridPos": {
+        "h": 7,
+        "w": 16,
+        "x": 8,
+        "y": 11
+      },
+      "datasource": {
+        "uid": "${ds_prom}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "scrape_duration_seconds{job=\"$job\"}",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 4,
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "calcs": [
+            "mean",
+            "last"
+          ],
+          "placement": "right"
+        }
+      },
+      "description": "scrape_duration_seconds \u2014 `$job`. Reference: https://grafana.com/docs/grafana/latest/dashboards/variables/"
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "scrape_samples_scraped \u2014 `$job / $instance`",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "datasource": {
+        "uid": "${ds_prom}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "scrape_samples_scraped{job=\"$job\", instance=\"$instance\"}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 20
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "description": "scrape_samples_scraped \u2014 `$job / $instance`. Reference: https://grafana.com/docs/grafana/latest/dashboards/variables/"
     }
   ]
 }

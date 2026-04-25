@@ -1,0 +1,226 @@
+{
+  "uid": "v12-testdata-showcase",
+  "title": "Grafana 12 — TestData Showcase (always works for demos)",
+  "description": "Self-contained Grafana 12 feature demo using ONLY the Grafana TestData datasource. Every panel renders synthetic data so the dashboard always looks alive — perfect for live demos where you cannot rely on Loki/Tempo/Postgres having real traffic. Every panel has inline help + a docs link.",
+  "tags": ["grafana-12", "testdata", "demo", "showcase", "v12-demo", "always-on"],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "refresh": "10s",
+  "time": {"from": "now-30m", "to": "now"},
+  "timepicker": {},
+  "templating": {"list": [
+    {"name": "ds_test", "type": "datasource", "query": "grafana-testdata-datasource", "refresh": 1, "current": {"text": "Grafana TestData", "value": "testdata"}},
+    {
+      "name": "env", "label": "Env (12.4 multi-property var)",
+      "description": "Multi-property variable from 12.4 — 'dev' and 'development' both map to the same query value 'dev'.",
+      "type": "custom", "multi": true, "includeAll": true, "allValue": ".*",
+      "options": [
+        {"text": "dev",         "value": "dev",  "selected": true},
+        {"text": "development", "value": "dev",  "selected": true},
+        {"text": "staging",     "value": "stg"},
+        {"text": "prod",        "value": "prod", "selected": true},
+        {"text": "production",  "value": "prod", "selected": true}
+      ],
+      "current": {"text": ["dev", "development", "prod", "production"], "value": ["dev", "dev", "prod", "prod"]}
+    },
+    {
+      "name": "show_details", "label": "Show details (12.3 switch var)",
+      "description": "Boolean toggle variable from 12.3 — flip to reveal the detail row.",
+      "type": "custom", "query": "0,1",
+      "options": [{"text": "Off", "value": "0", "selected": true}, {"text": "On", "value": "1"}],
+      "current": {"text": "Off", "value": "0"}
+    }
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "",
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "html", "content": "<div style=\"padding:1.5rem;background:linear-gradient(135deg,#1f60c4 0%,#5794f2 100%);border-radius:10px;color:#fff;font-family:system-ui\"><div style=\"font-size:0.8rem;letter-spacing:.2em;opacity:.85;margin-bottom:.3rem\">DEMO GUIDE</div><div style=\"font-size:1.8rem;font-weight:700;margin-bottom:.5rem\">Grafana 12 — TestData Showcase</div><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:.8rem\"><div><div style=\"font-weight:600;margin-bottom:.3rem\">🎯 What you're looking at</div><div style=\"font-size:.9rem;opacity:.95\">Every panel below is powered by the built-in <strong>Grafana TestData</strong> datasource. No Prometheus / Loki / Tempo dependency — the data is synthetic but exercises real Grafana 12 panel features.</div></div><div><div style=\"font-weight:600;margin-bottom:.3rem\">🧪 Try this</div><div style=\"font-size:.9rem;opacity:.95\">Flip the <code>Env</code> variable at the top — pick <em>dev</em> AND <em>development</em>: both map to the same value (12.4 multi-property variables). Toggle <code>Show details</code> to reveal/hide the detail row (12.3 switch variable). Hover any panel title → <em>Inspect → Query</em> to see the TestData scenario.</div></div></div><div style=\"margin-top:.8rem;padding-top:.8rem;border-top:1px solid rgba(255,255,255,.2);font-size:.85rem;opacity:.95\">📚 <strong>Learn more</strong>: <a href=\"https://grafana.com/docs/grafana/latest/datasources/testdata/\" style=\"color:#fff;text-decoration:underline\">TestData datasource docs</a> · <a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-4/\" style=\"color:#fff;text-decoration:underline\">v12.4 What's New</a> · <a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-0/\" style=\"color:#fff;text-decoration:underline\">v12.0 What's New</a></div></div>"}
+    },
+
+    {
+      "id": 10, "type": "row", "title": "📊 Time series + Regression (12.1)", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9}
+    },
+
+    {
+      "id": 11, "type": "timeseries",
+      "title": "Random walk with linear regression overlay",
+      "description": "Demonstrates the v12.1 Regression Analysis transformation: TestData generates a random walk, and the transform overlays a linear-fit prediction extending into the future. Edit the panel → Transform → Regression analysis to see the config. Docs: https://grafana.com/docs/grafana/latest/panels-visualizations/query-transform-data/transform-data/#regression-analysis",
+      "gridPos": {"h": 11, "w": 12, "x": 0, "y": 10},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [
+        {"refId": "A", "scenarioId": "random_walk", "alias": "actual", "noise": 2.2, "min": 50, "max": 100, "startValue": 75}
+      ],
+      "transformations": [
+        {"id": "regression", "options": {"modelType": "linear", "predictionCount": 60, "yFieldName": "actual"}}
+      ],
+      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 15}}, "overrides": [{"matcher": {"id": "byRegexp", "options": "/.*predicted.*/"}, "properties": [{"id": "custom.lineStyle", "value": {"dash": [8, 8]}}, {"id": "color", "value": {"mode": "fixed", "fixedColor": "yellow"}}]}]},
+      "options": {"legend": {"displayMode": "table", "calcs": ["mean", "last"], "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 12, "type": "timeseries",
+      "title": "Polynomial regression — predict 2 hours ahead",
+      "description": "Same regression transform, but with a polynomial degree-3 model — better at capturing trends. Use it for capacity planning panels (memory, queue depth). Docs: https://grafana.com/docs/grafana/latest/panels-visualizations/query-transform-data/transform-data/#regression-analysis",
+      "gridPos": {"h": 11, "w": 12, "x": 12, "y": 10},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [
+        {"refId": "A", "scenarioId": "predictable_pulse", "alias": "memory", "min": 100, "max": 800}
+      ],
+      "transformations": [
+        {"id": "regression", "options": {"modelType": "polynomial", "degree": 3, "predictionCount": 120, "yFieldName": "memory"}}
+      ],
+      "fieldConfig": {"defaults": {"unit": "decmbytes", "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 20}}, "overrides": [{"matcher": {"id": "byRegexp", "options": "/.*predicted.*/"}, "properties": [{"id": "custom.lineStyle", "value": {"dash": [8, 8]}}, {"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}]}]},
+      "options": {"legend": {"displayMode": "table", "calcs": ["mean", "max"]}, "tooltip": {"mode": "multi"}}
+    },
+
+    {
+      "id": 20, "type": "row", "title": "📈 Gauge styles (12.4 Circular + Arc)", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 21}
+    },
+
+    {
+      "id": 21, "type": "gauge",
+      "title": "CPU saturation — Circular",
+      "description": "v12.4 redesigned the gauge with a Style option (Circular / Arc). This panel uses Circular. Edit → Panel options → Style to flip. Docs: https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/gauge/",
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 22},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [{"refId": "A", "scenarioId": "random_walk", "min": 30, "max": 95, "alias": "cpu"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "showThresholdMarkers": true, "showThresholdLabels": false, "orientation": "auto"},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 70}, {"color": "red", "value": 90}]}}, "overrides": []}
+    },
+    {
+      "id": 22, "type": "gauge",
+      "title": "Memory — Circular",
+      "description": "Threshold colors + threshold markers — same panel type as CPU on the left. The reduce calc determines what value the gauge shows from the time series.",
+      "gridPos": {"h": 8, "w": 6, "x": 6, "y": 22},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [{"refId": "A", "scenarioId": "random_walk", "min": 40, "max": 80, "alias": "mem"}],
+      "options": {"reduceOptions": {"calcs": ["mean"]}, "showThresholdMarkers": true, "orientation": "auto"},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 65}, {"color": "red", "value": 80}]}}, "overrides": []}
+    },
+    {
+      "id": 23, "type": "gauge",
+      "title": "Latency p95 — Arc",
+      "description": "Horizontal Arc style. Better for narrow panels — useful in row-headers showing 6+ KPIs in a strip.",
+      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 22},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [{"refId": "A", "scenarioId": "random_walk", "min": 50, "max": 350, "alias": "p95"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "showThresholdMarkers": true, "orientation": "horizontal"},
+      "fieldConfig": {"defaults": {"unit": "ms", "min": 0, "max": 500, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 200}, {"color": "red", "value": 350}]}}, "overrides": []}
+    },
+    {
+      "id": 24, "type": "gauge",
+      "title": "Goroutines — Arc",
+      "description": "Same Arc layout, different scale. Try Edit → Panel options to swap between Circular and Arc on this panel.",
+      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 22},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [{"refId": "A", "scenarioId": "random_walk", "min": 100, "max": 350, "alias": "goroutines"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "showThresholdMarkers": true, "orientation": "horizontal"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0, "max": 500, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 250}, {"color": "red", "value": 400}]}}, "overrides": []}
+    },
+
+    {
+      "id": 30, "type": "row", "title": "🗂 React Data Grid Table (12.0 → GA 12.2)", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 30}
+    },
+
+    {
+      "id": 31, "type": "table",
+      "title": "CSV-driven table — color cells, gauge cells, links",
+      "description": "TestData CSV scenario lets you write any tabular data and exercise the new react-data-grid features: color-background cells, in-cell gauges, link cells, sortable columns. This is the same engine that powers production tables since 12.2 GA. Docs: https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/table/",
+      "gridPos": {"h": 13, "w": 24, "x": 0, "y": 31},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [{
+        "refId": "A", "scenarioId": "csv_content",
+        "csvContent": "service,env,p95_ms,error_rate,uptime_pct\napi-gateway,prod,142,0.012,99.97\napi-gateway,dev,98,0.041,99.21\nbilling,prod,231,0.003,99.99\nbilling,dev,178,0.018,99.51\nauth-service,prod,87,0.001,99.999\nauth-service,dev,95,0.022,99.42\nsearch,prod,412,0.029,99.81\nsearch,dev,489,0.082,98.13\norders,prod,167,0.005,99.98\norders,dev,201,0.031,99.31\nnotifications,prod,73,0.012,99.95\nnotifications,dev,89,0.019,99.66"
+      }],
+      "fieldConfig": {
+        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "p95_ms"}, "properties": [{"id": "unit", "value": "ms"}, {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "gradient"}}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 200}, {"color": "red", "value": 400}]}}]},
+          {"matcher": {"id": "byName", "options": "error_rate"}, "properties": [{"id": "unit", "value": "percentunit"}, {"id": "decimals", "value": 4}, {"id": "custom.cellOptions", "value": {"type": "gauge", "mode": "lcd"}}, {"id": "max", "value": 0.1}]},
+          {"matcher": {"id": "byName", "options": "uptime_pct"}, "properties": [{"id": "unit", "value": "percent"}, {"id": "decimals", "value": 2}, {"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 99}, {"color": "green", "value": 99.9}]}}]},
+          {"matcher": {"id": "byName", "options": "env"}, "properties": [{"id": "custom.width", "value": 100}]}
+        ]
+      },
+      "options": {"showHeader": true, "footer": {"show": true, "reducer": ["mean"], "fields": ["p95_ms"]}, "cellHeight": "sm"}
+    },
+
+    {
+      "id": 40, "type": "row", "title": "🔁 Switch variable (12.3) + Multi-property variable (12.4)", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 44}
+    },
+
+    {
+      "id": 41, "type": "stat",
+      "title": "Selected env (raw value the queries see)",
+      "description": "The Env variable above maps both 'dev' AND 'development' to the same value 'dev'. This stat just echoes what the panel queries see — picking dev+development+prod+production yields three distinct values: dev, dev, prod, prod (deduped to dev,prod). 12.4 multi-property variables.",
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 45},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [{"refId": "A", "scenarioId": "manual_entry", "points": [[1, 1]], "alias": "env=${env:csv}"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "none", "textMode": "name"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 42, "type": "stat",
+      "title": "Switch variable state (12.3)",
+      "description": "Boolean toggle variable. Flip 'Show details' at the top — this stat reflects the chosen value. Useful for showing / hiding expensive panels based on a single click.",
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 45},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [{"refId": "A", "scenarioId": "manual_entry", "points": [[1, 1]], "alias": "show_details=${show_details}"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none", "textMode": "name"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": []}, "overrides": []}
+    },
+
+    {
+      "id": 50, "type": "row", "title": "🎯 Visualization Actions (12.1) + Drilldown links", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 51}
+    },
+
+    {
+      "id": 51, "type": "stat",
+      "title": "Click → opens Metrics Drilldown",
+      "description": "v12.1 Visualization Actions let you attach custom buttons to any panel. The action below opens the Metrics Drilldown app — try the panel menu (⋮ → Actions). Docs: https://grafana.com/docs/grafana/latest/panels-visualizations/configure-actions/",
+      "gridPos": {"h": 7, "w": 8, "x": 0, "y": 52},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [{"refId": "A", "scenarioId": "random_walk", "min": 1, "max": 9, "alias": "score"}],
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area",
+        "actions": [{"title": "Open Metrics Drilldown", "fetch": {"url": "/a/grafana-metricsdrilldown-app", "method": "GET"}}]
+      },
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "decimals": 2}, "overrides": []}
+    },
+    {
+      "id": 52, "type": "stat",
+      "title": "Click → opens Logs Drilldown",
+      "description": "Same panel pattern, different action — opens the Logs Drilldown (Loki Explore) app.",
+      "gridPos": {"h": 7, "w": 8, "x": 8, "y": 52},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [{"refId": "A", "scenarioId": "random_walk", "min": 0, "max": 1000, "alias": "log_rate"}],
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area",
+        "actions": [{"title": "Open Logs Drilldown", "fetch": {"url": "/a/grafana-lokiexplore-app", "method": "GET"}}]
+      },
+      "fieldConfig": {"defaults": {"unit": "lps", "color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+    {
+      "id": 53, "type": "stat",
+      "title": "Click → opens Traces Drilldown",
+      "description": "Action targets the Traces Drilldown app — the third app in the v12.0 Drilldown suite GA.",
+      "gridPos": {"h": 7, "w": 8, "x": 16, "y": 52},
+      "datasource": {"uid": "${ds_test}", "type": "grafana-testdata-datasource"},
+      "targets": [{"refId": "A", "scenarioId": "random_walk", "min": 0, "max": 50, "alias": "spans/s"}],
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area",
+        "actions": [{"title": "Open Traces Drilldown", "fetch": {"url": "/a/grafana-exploretraces-app", "method": "GET"}}]
+      },
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []}
+    },
+
+    {
+      "id": 60, "type": "row", "title": "📚 Where to go next", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 59}
+    },
+    {
+      "id": 61, "type": "text", "title": "",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 60},
+      "options": {"mode": "html", "content": "<div style=\"padding:1.2rem;background:#1a1a1a;border:1px solid #333;border-radius:8px;font-family:system-ui\"><div style=\"display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem\"><div><div style=\"color:#5794f2;font-weight:600;margin-bottom:.4rem\">📖 Reference</div><a href=\"https://grafana.com/docs/grafana/latest/datasources/testdata/\" style=\"color:#ff9830;display:block\">TestData datasource docs</a><a href=\"https://grafana.com/docs/grafana/latest/panels-visualizations/\" style=\"color:#ff9830;display:block\">Panels & visualizations</a><a href=\"https://grafana.com/docs/grafana/latest/dashboards/variables/\" style=\"color:#ff9830;display:block\">Variables guide</a></div><div><div style=\"color:#5794f2;font-weight:600;margin-bottom:.4rem\">🆕 v12.x what's new</div><a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-0/\" style=\"color:#ff9830;display:block\">v12.0</a><a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-1/\" style=\"color:#ff9830;display:block\">v12.1</a><a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-2/\" style=\"color:#ff9830;display:block\">v12.2</a><a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-3/\" style=\"color:#ff9830;display:block\">v12.3</a><a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-4/\" style=\"color:#ff9830;display:block\">v12.4</a></div><div><div style=\"color:#5794f2;font-weight:600;margin-bottom:.4rem\">🛡 Admin tools</div><a href=\"/d/v12-admin-readiness\" style=\"color:#ff9830;display:block\">Migration Readiness</a><a href=\"/d/v12-admin-bct\" style=\"color:#ff9830;display:block\">Breaking-changes Tracker</a><a href=\"/d/v12-admin-prepost\" style=\"color:#ff9830;display:block\">Pre/Post Comparison</a></div><div><div style=\"color:#5794f2;font-weight:600;margin-bottom:.4rem\">🎤 Enterprise pitch</div><a href=\"/d/v12-enterprise-whats-new\" style=\"color:#ff9830;display:block\">What's New (showcase)</a><a href=\"/d/v12-enterprise-deprecations\" style=\"color:#ff9830;display:block\">Deprecations (risk)</a></div></div></div>"}
+    }
+  ]
+}

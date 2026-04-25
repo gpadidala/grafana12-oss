@@ -1,38 +1,158 @@
 {
   "uid": "v12-0-recording-rules",
-  "title": "Grafana 12.0 — Grafana-managed Recording Rules",
+  "title": "Grafana 12.0 \u2014 Grafana-managed Recording Rules",
   "description": "Grafana-managed recording rules went GA in 12.0. This dashboard shows the canonical pattern: an expensive raw metric alongside a cheaper recorded version. Create a recording rule at /alerting/new/recording and point it at the raw expression on the left; then wire the resulting series into the right-hand panel.",
-  "tags": ["grafana-12", "v12.0", "recording-rules", "v12-demo"],
+  "tags": [
+    "grafana-12",
+    "v12.0",
+    "recording-rules",
+    "v12-demo"
+  ],
   "schemaVersion": 40,
   "version": 1,
   "editable": true,
   "refresh": "30s",
-  "time": {"from": "now-30m", "to": "now"},
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
   "timepicker": {},
-  "templating": {"list": [
-    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
-  ]},
+  "templating": {
+    "list": [
+      {
+        "name": "ds_prom",
+        "type": "datasource",
+        "query": "prometheus",
+        "refresh": 1,
+        "current": {
+          "text": "Prometheus",
+          "value": "prom"
+        }
+      }
+    ]
+  },
   "panels": [
     {
-      "id": 1, "type": "text", "title": "",
-      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
-      "options": {"mode": "markdown", "content": "### Grafana-managed recording rules\n\nIn 12.0 Grafana can now evaluate your recording rules itself (no Mimir/Prometheus ruler needed for OSS).\n\n1. Enable toggle: `grafanaManagedRecordingRules` ✓ (on)\n2. Create the rule → [Alerting › New recording rule](/alerting/new/recording)\n3. Suggested recipe:\n   - **Name:** `grafana:http_p95_5m`\n   - **Expression:** `histogram_quantile(0.95, sum by (le, handler)(rate(grafana_http_request_duration_seconds_bucket[5m])))`\n   - **Evaluation group:** `grafana-slo`, every `30s`\n4. The right-hand panel below queries the recorded metric by name — once the rule starts firing values, the two panels should match (with lower query cost)."}
+      "id": 10000,
+      "type": "text",
+      "title": "",
+      "tags": [
+        "demo-guide"
+      ],
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"padding:1.2rem;background:#1a2a3a;border-left:4px solid #5794f2;border-radius:6px;font-family:system-ui\"><div style=\"font-size:.75rem;letter-spacing:.18em;color:#8aa9d0;margin-bottom:.3rem\">DEMO GUIDE</div><div style=\"font-size:1.3rem;font-weight:600;color:#fff;margin-bottom:.6rem\">Grafana 12.0 \u2014 Grafana-managed Recording Rules</div><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1rem\"><div><div style=\"font-weight:600;color:#5794f2;margin-bottom:.2rem\">\ud83c\udfaf What you're looking at</div><div style=\"font-size:.88rem;color:#dfe7f0\">Grafana now evaluates recording rules itself \u2014 no need for a separate Mimir/Prometheus ruler in OSS.</div></div><div><div style=\"font-weight:600;color:#73bf69;margin-bottom:.2rem\">\ud83e\uddea Try this</div><div style=\"font-size:.88rem;color:#dfe7f0\">Click the link in the intro to create a recording rule, then come back and refresh. The right-hand panel will start showing the recorded metric.</div></div></div><div style=\"margin-top:.8rem;padding-top:.6rem;border-top:1px solid #2d3e54;font-size:.85rem\">\ud83d\udcda <strong style=\"color:#fff\">Learn more</strong>: <a href=\"https://grafana.com/docs/grafana/latest/alerting/alerting-rules/create-grafana-managed-rule/\" target=\"_blank\" style=\"color:#ff9830\">Grafana docs</a> \u00b7 <a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-0/\" target=\"_blank\" style=\"color:#ff9830\">v12 What's New</a></div></div>"
+      }
     },
     {
-      "id": 2, "type": "timeseries", "title": "Raw query (what you'd normally pay for)",
-      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 6},
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "histogram_quantile(0.95, sum by (le, handler)(rate(grafana_http_request_duration_seconds_bucket[5m])))", "legendFormat": "{{handler}}"}],
-      "fieldConfig": {"defaults": {"unit": "s", "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}}, "overrides": []},
-      "options": {"legend": {"displayMode": "table", "calcs": ["mean", "max"], "placement": "bottom"}}
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Grafana-managed recording rules\n\nIn 12.0 Grafana can now evaluate your recording rules itself (no Mimir/Prometheus ruler needed for OSS).\n\n1. Enable toggle: `grafanaManagedRecordingRules` \u2713 (on)\n2. Create the rule \u2192 [Alerting \u203a New recording rule](/alerting/new/recording)\n3. Suggested recipe:\n   - **Name:** `grafana:http_p95_5m`\n   - **Expression:** `histogram_quantile(0.95, sum by (le, handler)(rate(grafana_http_request_duration_seconds_bucket[5m])))`\n   - **Evaluation group:** `grafana-slo`, every `30s`\n4. The right-hand panel below queries the recorded metric by name \u2014 once the rule starts firing values, the two panels should match (with lower query cost)."
+      }
     },
     {
-      "id": 3, "type": "timeseries", "title": "Recorded metric (after you create the rule)",
-      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 6},
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "grafana:http_p95_5m", "legendFormat": "{{handler}}"}],
-      "fieldConfig": {"defaults": {"unit": "s", "noValue": "Create the recording rule to populate this panel", "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10}}, "overrides": []},
-      "options": {"legend": {"displayMode": "table", "calcs": ["mean", "max"], "placement": "bottom"}}
+      "id": 2,
+      "type": "timeseries",
+      "title": "Raw query (what you'd normally pay for)",
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "datasource": {
+        "uid": "${ds_prom}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le, handler)(rate(grafana_http_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "placement": "bottom"
+        }
+      },
+      "description": "Raw query (what you'd normally pay for). Reference: https://grafana.com/docs/grafana/latest/alerting/alerting-rules/create-grafana-managed-rule/"
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Recorded metric (after you create the rule)",
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "datasource": {
+        "uid": "${ds_prom}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "grafana:http_p95_5m",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "Create the recording rule to populate this panel",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "placement": "bottom"
+        }
+      },
+      "description": "Recorded metric (after you create the rule). Reference: https://grafana.com/docs/grafana/latest/alerting/alerting-rules/create-grafana-managed-rule/"
     }
   ]
 }

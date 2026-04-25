@@ -1,29 +1,101 @@
 {
   "uid": "v12-4-otlp",
-  "title": "Grafana 12.4 — OTLP Logs Defaults",
+  "title": "Grafana 12.4 \u2014 OTLP Logs Defaults",
   "description": "12.4 surfaces OpenTelemetry structured attributes as first-class log detail columns without you having to expand the line. Toggle `otlpLogs` (enabled in this lab) drives the behavior. Below: Loki logs with the log-details panel open by default.",
-  "tags": ["grafana-12", "v12.4", "otlp", "logs", "v12-demo"],
+  "tags": [
+    "grafana-12",
+    "v12.4",
+    "otlp",
+    "logs",
+    "v12-demo"
+  ],
   "schemaVersion": 40,
   "version": 1,
   "editable": true,
   "refresh": "30s",
-  "time": {"from": "now-15m", "to": "now"},
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
   "timepicker": {},
-  "templating": {"list": [
-    {"name": "ds_loki", "type": "datasource", "query": "loki", "refresh": 1, "current": {"text": "Loki", "value": "loki"}}
-  ]},
+  "templating": {
+    "list": [
+      {
+        "name": "ds_loki",
+        "type": "datasource",
+        "query": "loki",
+        "refresh": 1,
+        "current": {
+          "text": "Loki",
+          "value": "loki"
+        }
+      }
+    ]
+  },
   "panels": [
     {
-      "id": 1, "type": "text", "title": "",
-      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
-      "options": {"mode": "markdown", "content": "### OTLP log defaults (12.4)\n\nWith `otlpLogs=true` (on in this lab) Loki logs that carry OTel structured metadata expose their attributes as log-detail columns without expanding each row. Click any log line below to see the attribute panel pre-populated."}
+      "id": 10000,
+      "type": "text",
+      "title": "",
+      "tags": [
+        "demo-guide"
+      ],
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"padding:1.2rem;background:#1a2a3a;border-left:4px solid #5794f2;border-radius:6px;font-family:system-ui\"><div style=\"font-size:.75rem;letter-spacing:.18em;color:#8aa9d0;margin-bottom:.3rem\">DEMO GUIDE</div><div style=\"font-size:1.3rem;font-weight:600;color:#fff;margin-bottom:.6rem\">Grafana 12.4 \u2014 OTLP Logs Defaults</div><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1rem\"><div><div style=\"font-weight:600;color:#5794f2;margin-bottom:.2rem\">\ud83c\udfaf What you're looking at</div><div style=\"font-size:.88rem;color:#dfe7f0\">v12.4 surfaces OpenTelemetry attributes as first-class log-detail columns without expanding each row.</div></div><div><div style=\"font-weight:600;color:#73bf69;margin-bottom:.2rem\">\ud83e\uddea Try this</div><div style=\"font-size:.88rem;color:#dfe7f0\">Click any log line \u2014 the detail panel pre-populates with parsed attributes.</div></div></div><div style=\"margin-top:.8rem;padding-top:.6rem;border-top:1px solid #2d3e54;font-size:.85rem\">\ud83d\udcda <strong style=\"color:#fff\">Learn more</strong>: <a href=\"https://grafana.com/docs/grafana/latest/explore/logs-integration/\" target=\"_blank\" style=\"color:#ff9830\">Grafana docs</a> \u00b7 <a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-4/\" target=\"_blank\" style=\"color:#ff9830\">v12 What's New</a></div></div>"
+      }
     },
     {
-      "id": 2, "type": "logs", "title": "Grafana container logs — structured attributes",
-      "gridPos": {"h": 18, "w": 24, "x": 0, "y": 4},
-      "datasource": {"uid": "${ds_loki}", "type": "loki"},
-      "targets": [{"refId": "A", "expr": "{container=\"grafana12_grafana\"} | json", "maxLines": 400}],
-      "options": {"showTime": true, "showLabels": true, "enableLogDetails": true, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none"}
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### OTLP log defaults (12.4)\n\nWith `otlpLogs=true` (on in this lab) Loki logs that carry OTel structured metadata expose their attributes as log-detail columns without expanding each row. Click any log line below to see the attribute panel pre-populated."
+      }
+    },
+    {
+      "id": 2,
+      "type": "logs",
+      "title": "Grafana container logs \u2014 structured attributes",
+      "gridPos": {
+        "h": 18,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "datasource": {
+        "uid": "${ds_loki}",
+        "type": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{container=\"grafana12_grafana\"} | json",
+          "maxLines": 400
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "enableLogDetails": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
+      "description": "Grafana container logs \u2014 structured attributes. Reference: https://grafana.com/docs/grafana/latest/explore/logs-integration/"
     }
   ]
 }

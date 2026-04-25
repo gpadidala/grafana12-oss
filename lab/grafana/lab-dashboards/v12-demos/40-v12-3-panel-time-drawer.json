@@ -1,46 +1,183 @@
 {
   "uid": "v12-3-time-drawer",
-  "title": "Grafana 12.3 — Panel Time Settings Drawer",
+  "title": "Grafana 12.3 \u2014 Panel Time Settings Drawer",
   "description": "12.3 added a per-panel time-settings drawer so you can override the dashboard range without opening the full edit view. Each panel below has a different relative range configured via the drawer.",
-  "tags": ["grafana-12", "v12.3", "time", "v12-demo"],
+  "tags": [
+    "grafana-12",
+    "v12.3",
+    "time",
+    "v12-demo"
+  ],
   "schemaVersion": 40,
   "version": 1,
   "editable": true,
   "refresh": "30s",
-  "time": {"from": "now-1h", "to": "now"},
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
   "timepicker": {},
-  "templating": {"list": [
-    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
-  ]},
+  "templating": {
+    "list": [
+      {
+        "name": "ds_prom",
+        "type": "datasource",
+        "query": "prometheus",
+        "refresh": 1,
+        "current": {
+          "text": "Prometheus",
+          "value": "prom"
+        }
+      }
+    ]
+  },
   "panels": [
     {
-      "id": 1, "type": "text", "title": "",
-      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
-      "options": {"mode": "markdown", "content": "### Panel time drawer (12.3)\n\nDashboard range: **last 1 hour**. Each panel below overrides it to a different window. Click the little clock icon in any panel's title menu → *Panel time range* to see the drawer."}
+      "id": 10000,
+      "type": "text",
+      "title": "",
+      "tags": [
+        "demo-guide"
+      ],
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"padding:1.2rem;background:#1a2a3a;border-left:4px solid #5794f2;border-radius:6px;font-family:system-ui\"><div style=\"font-size:.75rem;letter-spacing:.18em;color:#8aa9d0;margin-bottom:.3rem\">DEMO GUIDE</div><div style=\"font-size:1.3rem;font-weight:600;color:#fff;margin-bottom:.6rem\">Grafana 12.3 \u2014 Panel Time Settings Drawer</div><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1rem\"><div><div style=\"font-weight:600;color:#5794f2;margin-bottom:.2rem\">\ud83c\udfaf What you're looking at</div><div style=\"font-size:.88rem;color:#dfe7f0\">12.3 added a per-panel time drawer \u2014 override the dashboard time range for one panel without opening the full edit view.</div></div><div><div style=\"font-weight:600;color:#73bf69;margin-bottom:.2rem\">\ud83e\uddea Try this</div><div style=\"font-size:.88rem;color:#dfe7f0\">Click the \u22ee on any panel \u2192 Panel time range. The drawer opens inline.</div></div></div><div style=\"margin-top:.8rem;padding-top:.6rem;border-top:1px solid #2d3e54;font-size:.85rem\">\ud83d\udcda <strong style=\"color:#fff\">Learn more</strong>: <a href=\"https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#dashboard-time-range-controls\" target=\"_blank\" style=\"color:#ff9830\">Grafana docs</a> \u00b7 <a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-3/\" target=\"_blank\" style=\"color:#ff9830\">v12 What's New</a></div></div>"
+      }
     },
     {
-      "id": 2, "type": "timeseries", "title": "Last 5 minutes", "timeFrom": "now-5m",
-      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 4},
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "rate(grafana_http_request_duration_seconds_count[1m])", "legendFormat": "{{handler}}"}],
-      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line"}}, "overrides": []},
-      "options": {"legend": {"showLegend": false}}
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Panel time drawer (12.3)\n\nDashboard range: **last 1 hour**. Each panel below overrides it to a different window. Click the little clock icon in any panel's title menu \u2192 *Panel time range* to see the drawer."
+      }
     },
     {
-      "id": 3, "type": "timeseries", "title": "Last 15 minutes", "timeFrom": "now-15m",
-      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 4},
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "rate(grafana_http_request_duration_seconds_count[1m])", "legendFormat": "{{handler}}"}],
-      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line"}}, "overrides": []},
-      "options": {"legend": {"showLegend": false}}
+      "id": 2,
+      "type": "timeseries",
+      "title": "Last 5 minutes",
+      "timeFrom": "now-5m",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 11
+      },
+      "datasource": {
+        "uid": "${ds_prom}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(grafana_http_request_duration_seconds_count[1m])",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "description": "Last 5 minutes. Reference: https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#dashboard-time-range-controls"
     },
     {
-      "id": 4, "type": "timeseries", "title": "Last 3 hours (looks past dashboard range)", "timeFrom": "now-3h",
-      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 4},
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "rate(grafana_http_request_duration_seconds_count[1m])", "legendFormat": "{{handler}}"}],
-      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line"}}, "overrides": []},
-      "options": {"legend": {"showLegend": false}}
+      "id": 3,
+      "type": "timeseries",
+      "title": "Last 15 minutes",
+      "timeFrom": "now-15m",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 11
+      },
+      "datasource": {
+        "uid": "${ds_prom}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(grafana_http_request_duration_seconds_count[1m])",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "description": "Last 15 minutes. Reference: https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#dashboard-time-range-controls"
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Last 3 hours (looks past dashboard range)",
+      "timeFrom": "now-3h",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 11
+      },
+      "datasource": {
+        "uid": "${ds_prom}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(grafana_http_request_duration_seconds_count[1m])",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "description": "Last 3 hours (looks past dashboard range). Reference: https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#dashboard-time-range-controls"
     }
   ]
 }

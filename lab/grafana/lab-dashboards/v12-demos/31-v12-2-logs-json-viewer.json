@@ -1,29 +1,100 @@
 {
   "uid": "v12-2-logs-json",
-  "title": "Grafana 12.2 — Logs JSON Viewer (Drilldown)",
+  "title": "Grafana 12.2 \u2014 Logs JSON Viewer (Drilldown)",
   "description": "Shows off the 12.2 Logs Drilldown JSON viewer: pick any JSON log line and Grafana renders the structured attributes as a navigable tree. Lab input: Grafana's own JSON-formatted logs (GF_LOG_FORMAT=json).",
-  "tags": ["grafana-12", "v12.2", "logs", "v12-demo"],
+  "tags": [
+    "grafana-12",
+    "v12.2",
+    "logs",
+    "v12-demo"
+  ],
   "schemaVersion": 40,
   "version": 1,
   "editable": true,
   "refresh": "30s",
-  "time": {"from": "now-15m", "to": "now"},
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
   "timepicker": {},
-  "templating": {"list": [
-    {"name": "ds_loki", "type": "datasource", "query": "loki", "refresh": 1, "current": {"text": "Loki", "value": "loki"}}
-  ]},
+  "templating": {
+    "list": [
+      {
+        "name": "ds_loki",
+        "type": "datasource",
+        "query": "loki",
+        "refresh": 1,
+        "current": {
+          "text": "Loki",
+          "value": "loki"
+        }
+      }
+    ]
+  },
   "panels": [
     {
-      "id": 1, "type": "text", "title": "",
-      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
-      "options": {"mode": "markdown", "content": "### Logs Drilldown JSON viewer (12.2)\n\n- Click **[➡ Logs Drilldown](/a/grafana-lokiexplore-app)** for the full app experience (Fields → JSON → tree).\n- The panel below keeps you on this dashboard and enables **log details** — click a line → *Parse JSON* to get the tree.\n\nGrafana is configured with `GF_LOG_FORMAT=json` so every line here is structured."}
+      "id": 10000,
+      "type": "text",
+      "title": "",
+      "tags": [
+        "demo-guide"
+      ],
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"padding:1.2rem;background:#1a2a3a;border-left:4px solid #5794f2;border-radius:6px;font-family:system-ui\"><div style=\"font-size:.75rem;letter-spacing:.18em;color:#8aa9d0;margin-bottom:.3rem\">DEMO GUIDE</div><div style=\"font-size:1.3rem;font-weight:600;color:#fff;margin-bottom:.6rem\">Grafana 12.2 \u2014 Logs JSON Viewer (Drilldown)</div><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1rem\"><div><div style=\"font-weight:600;color:#5794f2;margin-bottom:.2rem\">\ud83c\udfaf What you're looking at</div><div style=\"font-size:.88rem;color:#dfe7f0\">12.2 shipped a JSON viewer in Logs Drilldown \u2014 click a JSON log line, get a navigable tree of attributes.</div></div><div><div style=\"font-weight:600;color:#73bf69;margin-bottom:.2rem\">\ud83e\uddea Try this</div><div style=\"font-size:.88rem;color:#dfe7f0\">Click any log line below \u2192 Parse JSON. Or open Logs Drilldown directly via the link in the intro.</div></div></div><div style=\"margin-top:.8rem;padding-top:.6rem;border-top:1px solid #2d3e54;font-size:.85rem\">\ud83d\udcda <strong style=\"color:#fff\">Learn more</strong>: <a href=\"https://grafana.com/docs/grafana-cloud/visualizations/simplified-exploration/logs/\" target=\"_blank\" style=\"color:#ff9830\">Grafana docs</a> \u00b7 <a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-2/\" target=\"_blank\" style=\"color:#ff9830\">v12 What's New</a></div></div>"
+      }
     },
     {
-      "id": 2, "type": "logs", "title": "Grafana logs (json) — click a line → Parse JSON",
-      "gridPos": {"h": 18, "w": 24, "x": 0, "y": 4},
-      "datasource": {"uid": "${ds_loki}", "type": "loki"},
-      "targets": [{"refId": "A", "expr": "{container=\"grafana12_grafana\"} | json", "maxLines": 300}],
-      "options": {"showTime": true, "showLabels": true, "enableLogDetails": true, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none"}
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Logs Drilldown JSON viewer (12.2)\n\n- Click **[\u27a1 Logs Drilldown](/a/grafana-lokiexplore-app)** for the full app experience (Fields \u2192 JSON \u2192 tree).\n- The panel below keeps you on this dashboard and enables **log details** \u2014 click a line \u2192 *Parse JSON* to get the tree.\n\nGrafana is configured with `GF_LOG_FORMAT=json` so every line here is structured."
+      }
+    },
+    {
+      "id": 2,
+      "type": "logs",
+      "title": "Grafana logs (json) \u2014 click a line \u2192 Parse JSON",
+      "gridPos": {
+        "h": 18,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "datasource": {
+        "uid": "${ds_loki}",
+        "type": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{container=\"grafana12_grafana\"} | json",
+          "maxLines": 300
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "enableLogDetails": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
+      "description": "Grafana logs (json) \u2014 click a line \u2192 Parse JSON. Reference: https://grafana.com/docs/grafana-cloud/visualizations/simplified-exploration/logs/"
     }
   ]
 }

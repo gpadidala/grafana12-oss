@@ -1,46 +1,147 @@
 {
   "uid": "v12-4-regex-vars",
-  "title": "Grafana 12.4 — Regex Variable Transforms",
-  "description": "12.4 lets you apply a regex to both the variable VALUE and the displayed TEXT. Pick any `handler` below — the dropdown shows the short name but the query uses the full path.",
-  "tags": ["grafana-12", "v12.4", "variables", "regex", "v12-demo"],
+  "title": "Grafana 12.4 \u2014 Regex Variable Transforms",
+  "description": "12.4 lets you apply a regex to both the variable VALUE and the displayed TEXT. Pick any `handler` below \u2014 the dropdown shows the short name but the query uses the full path.",
+  "tags": [
+    "grafana-12",
+    "v12.4",
+    "variables",
+    "regex",
+    "v12-demo"
+  ],
   "schemaVersion": 40,
   "version": 1,
   "editable": true,
   "refresh": "30s",
-  "time": {"from": "now-15m", "to": "now"},
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
   "timepicker": {},
-  "templating": {"list": [
-    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
-    {
-      "name": "handler_full", "label": "Handler (full path)", "type": "query",
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "query": {"query": "label_values(grafana_http_request_duration_seconds_count, handler)", "refId": "StandardVariableQuery"},
-      "refresh": 2, "multi": false, "includeAll": false, "hide": 0,
-      "regex": "/^(?<value>.+)$/",
-      "description": "Captures full path. Displayed short-form via the variable below."
-    },
-    {
-      "name": "handler_short", "label": "Handler (display)", "type": "query",
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "query": {"query": "label_values(grafana_http_request_duration_seconds_count, handler)", "refId": "StandardVariableQuery"},
-      "refresh": 2, "multi": false, "includeAll": false, "hide": 0,
-      "regex": "/^.*\\/(?<text>[^\\/]+)$/",
-      "description": "12.4 regex-text transform — captures only the final path segment for display."
-    }
-  ]},
+  "templating": {
+    "list": [
+      {
+        "name": "ds_prom",
+        "type": "datasource",
+        "query": "prometheus",
+        "refresh": 1,
+        "current": {
+          "text": "Prometheus",
+          "value": "prom"
+        }
+      },
+      {
+        "name": "handler_full",
+        "label": "Handler (full path)",
+        "type": "query",
+        "datasource": {
+          "uid": "${ds_prom}",
+          "type": "prometheus"
+        },
+        "query": {
+          "query": "label_values(grafana_http_request_duration_seconds_count, handler)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "multi": false,
+        "includeAll": false,
+        "hide": 0,
+        "regex": "/^(?<value>.+)$/",
+        "description": "Captures full path. Displayed short-form via the variable below."
+      },
+      {
+        "name": "handler_short",
+        "label": "Handler (display)",
+        "type": "query",
+        "datasource": {
+          "uid": "${ds_prom}",
+          "type": "prometheus"
+        },
+        "query": {
+          "query": "label_values(grafana_http_request_duration_seconds_count, handler)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "multi": false,
+        "includeAll": false,
+        "hide": 0,
+        "regex": "/^.*\\/(?<text>[^\\/]+)$/",
+        "description": "12.4 regex-text transform \u2014 captures only the final path segment for display."
+      }
+    ]
+  },
   "panels": [
     {
-      "id": 1, "type": "text", "title": "",
-      "gridPos": {"h": 5, "w": 24, "x": 0, "y": 0},
-      "options": {"mode": "markdown", "content": "### Regex variable transforms (12.4)\n\n- **`handler_full`** — regex `^(?<value>.+)$` keeps the whole path. Used in queries.\n- **`handler_short`** — regex `^.*/(?<text>[^/]+)$` captures only the last path segment for display.\n\nEach panel below injects both forms so you can see display-vs-value."}
+      "id": 10000,
+      "type": "text",
+      "title": "",
+      "tags": [
+        "demo-guide"
+      ],
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"padding:1.2rem;background:#1a2a3a;border-left:4px solid #5794f2;border-radius:6px;font-family:system-ui\"><div style=\"font-size:.75rem;letter-spacing:.18em;color:#8aa9d0;margin-bottom:.3rem\">DEMO GUIDE</div><div style=\"font-size:1.3rem;font-weight:600;color:#fff;margin-bottom:.6rem\">Grafana 12.4 \u2014 Regex Variable Transforms</div><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1rem\"><div><div style=\"font-weight:600;color:#5794f2;margin-bottom:.2rem\">\ud83c\udfaf What you're looking at</div><div style=\"font-size:.88rem;color:#dfe7f0\">12.4 lets you transform variable values AND display text via regex capture groups. Show short names in the dropdown, query with the full path.</div></div><div><div style=\"font-weight:600;color:#73bf69;margin-bottom:.2rem\">\ud83e\uddea Try this</div><div style=\"font-size:.88rem;color:#dfe7f0\">Pick a handler \u2014 the dropdown shows the short name (last path segment); the query uses the full path.</div></div></div><div style=\"margin-top:.8rem;padding-top:.6rem;border-top:1px solid #2d3e54;font-size:.85rem\">\ud83d\udcda <strong style=\"color:#fff\">Learn more</strong>: <a href=\"https://grafana.com/docs/grafana/latest/dashboards/variables/filter-variables-with-regex/\" target=\"_blank\" style=\"color:#ff9830\">Grafana docs</a> \u00b7 <a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-4/\" target=\"_blank\" style=\"color:#ff9830\">v12 What's New</a></div></div>"
+      }
     },
     {
-      "id": 2, "type": "timeseries", "title": "req/s for `${handler_short}` (query value: `${handler_full}`)",
-      "gridPos": {"h": 11, "w": 24, "x": 0, "y": 5},
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "sum by (status_code) (rate(grafana_http_request_duration_seconds_count{handler=\"${handler_full}\"}[$__rate_interval]))", "legendFormat": "{{status_code}}"}],
-      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line", "fillOpacity": 15}}, "overrides": []},
-      "options": {"legend": {"displayMode": "table", "placement": "right"}}
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Regex variable transforms (12.4)\n\n- **`handler_full`** \u2014 regex `^(?<value>.+)$` keeps the whole path. Used in queries.\n- **`handler_short`** \u2014 regex `^.*/(?<text>[^/]+)$` captures only the last path segment for display.\n\nEach panel below injects both forms so you can see display-vs-value."
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "req/s for `${handler_short}` (query value: `${handler_full}`)",
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "datasource": {
+        "uid": "${ds_prom}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (status_code) (rate(grafana_http_request_duration_seconds_count{handler=\"${handler_full}\"}[$__rate_interval]))",
+          "legendFormat": "{{status_code}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
+      "description": "req/s for `${handler_short}` (query value: `${handler_full}`). Reference: https://grafana.com/docs/grafana/latest/dashboards/variables/filter-variables-with-regex/"
     }
   ]
 }

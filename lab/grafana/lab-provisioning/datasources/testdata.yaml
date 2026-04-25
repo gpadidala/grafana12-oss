@@ -1,0 +1,12 @@
+apiVersion: 1
+datasources:
+  - name: Grafana TestData
+    uid: testdata
+    # Core in 12.x — no install needed. Synthetic data generator perfect for demos
+    # (random walk, CSV, predictable manual entries, etc.) — never returns "no data"
+    # so the demo flow doesn't depend on Loki/Tempo/Pyroscope having ingested anything.
+    type: grafana-testdata-datasource
+    isDefault: false
+    editable: true
+    jsonData:
+      tlsSkipVerify: true

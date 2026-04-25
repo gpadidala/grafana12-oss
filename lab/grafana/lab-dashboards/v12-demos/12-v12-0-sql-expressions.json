@@ -1,46 +1,203 @@
 {
   "uid": "v12-0-sql-expr",
-  "title": "Grafana 12.0 — SQL Expressions",
+  "title": "Grafana 12.0 \u2014 SQL Expressions",
   "description": "Demonstrates SQL Expressions (MySQL dialect) running on top of two Prometheus queries. Requires the `sqlExpressions` feature toggle (enabled in .env). Query A fetches HTTP request rates by handler; query B fetches average durations; the SQL expression joins the two and sorts by busiest.",
-  "tags": ["grafana-12", "v12.0", "sql-expressions", "v12-demo"],
+  "tags": [
+    "grafana-12",
+    "v12.0",
+    "sql-expressions",
+    "v12-demo"
+  ],
   "schemaVersion": 40,
   "version": 1,
   "editable": true,
   "refresh": "30s",
-  "time": {"from": "now-15m", "to": "now"},
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
   "timepicker": {},
-  "templating": {"list": [
-    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
-  ]},
+  "templating": {
+    "list": [
+      {
+        "name": "ds_prom",
+        "type": "datasource",
+        "query": "prometheus",
+        "refresh": 1,
+        "current": {
+          "text": "Prometheus",
+          "value": "prom"
+        }
+      }
+    ]
+  },
   "panels": [
     {
-      "id": 1, "type": "text", "title": "",
-      "gridPos": {"h": 5, "w": 24, "x": 0, "y": 0},
-      "options": {"mode": "markdown", "content": "### SQL Expressions\n\n**Enabled by:** `GF_FEATURE_TOGGLES_ENABLE=sqlExpressions` (already set in this lab).\n\nYou can join results from different data sources with a SQL SELECT. This dashboard joins two Prometheus queries on the `handler` label. Panel below is the joined result; the SQL is in the query tab — click *Edit* on the panel."}
+      "id": 10000,
+      "type": "text",
+      "title": "",
+      "tags": [
+        "demo-guide"
+      ],
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"padding:1.2rem;background:#1a2a3a;border-left:4px solid #5794f2;border-radius:6px;font-family:system-ui\"><div style=\"font-size:.75rem;letter-spacing:.18em;color:#8aa9d0;margin-bottom:.3rem\">DEMO GUIDE</div><div style=\"font-size:1.3rem;font-weight:600;color:#fff;margin-bottom:.6rem\">Grafana 12.0 \u2014 SQL Expressions</div><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1rem\"><div><div style=\"font-weight:600;color:#5794f2;margin-bottom:.2rem\">\ud83c\udfaf What you're looking at</div><div style=\"font-size:.88rem;color:#dfe7f0\">v12.0 SQL Expressions let you JOIN results from different data sources with a SQL SELECT. Think 'SELECT \u2026 FROM A JOIN B' across Prom + Postgres in one panel.</div></div><div><div style=\"font-weight:600;color:#73bf69;margin-bottom:.2rem\">\ud83e\uddea Try this</div><div style=\"font-size:.88rem;color:#dfe7f0\">Edit the panel \u2014 the third query (refId: SQL) is plain SQL operating on the rows from refId A and B. Change the SQL to add a WHERE clause.</div></div></div><div style=\"margin-top:.8rem;padding-top:.6rem;border-top:1px solid #2d3e54;font-size:.85rem\">\ud83d\udcda <strong style=\"color:#fff\">Learn more</strong>: <a href=\"https://grafana.com/docs/grafana/latest/panels-visualizations/query-transform-data/expression-queries/#sql-expressions\" target=\"_blank\" style=\"color:#ff9830\">Grafana docs</a> \u00b7 <a href=\"https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-0/\" target=\"_blank\" style=\"color:#ff9830\">v12 What's New</a></div></div>"
+      }
     },
     {
-      "id": 2, "type": "table", "title": "HTTP handlers — rate vs avg latency (SQL joined)",
-      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 5},
-      "datasource": {"uid": "__expr__", "type": "__expr__"},
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### SQL Expressions\n\n**Enabled by:** `GF_FEATURE_TOGGLES_ENABLE=sqlExpressions` (already set in this lab).\n\nYou can join results from different data sources with a SQL SELECT. This dashboard joins two Prometheus queries on the `handler` label. Panel below is the joined result; the SQL is in the query tab \u2014 click *Edit* on the panel."
+      }
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "HTTP handlers \u2014 rate vs avg latency (SQL joined)",
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "datasource": {
+        "uid": "__expr__",
+        "type": "__expr__"
+      },
       "targets": [
-        {"refId": "A", "datasource": {"uid": "${ds_prom}", "type": "prometheus"}, "expr": "sum by (handler) (rate(grafana_http_request_duration_seconds_count[$__rate_interval]))", "format": "table", "instant": true},
-        {"refId": "B", "datasource": {"uid": "${ds_prom}", "type": "prometheus"}, "expr": "sum by (handler) (rate(grafana_http_request_duration_seconds_sum[$__rate_interval])) / sum by (handler) (rate(grafana_http_request_duration_seconds_count[$__rate_interval]))", "format": "table", "instant": true},
+        {
+          "refId": "A",
+          "datasource": {
+            "uid": "${ds_prom}",
+            "type": "prometheus"
+          },
+          "expr": "sum by (handler) (rate(grafana_http_request_duration_seconds_count[$__rate_interval]))",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "uid": "${ds_prom}",
+            "type": "prometheus"
+          },
+          "expr": "sum by (handler) (rate(grafana_http_request_duration_seconds_sum[$__rate_interval])) / sum by (handler) (rate(grafana_http_request_duration_seconds_count[$__rate_interval]))",
+          "format": "table",
+          "instant": true
+        },
         {
           "refId": "SQL",
-          "datasource": {"uid": "__expr__", "type": "__expr__"},
+          "datasource": {
+            "uid": "__expr__",
+            "type": "__expr__"
+          },
           "type": "sql",
           "expression": "SELECT A.handler AS handler, A.\"Value\" AS req_per_sec, B.\"Value\" AS avg_latency_sec FROM A LEFT JOIN B ON A.handler = B.handler ORDER BY req_per_sec DESC LIMIT 25"
         }
       ],
       "transformations": [],
       "fieldConfig": {
-        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "defaults": {
+          "custom": {
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
         "overrides": [
-          {"matcher": {"id": "byName", "options": "req_per_sec"}, "properties": [{"id": "unit", "value": "reqps"}, {"id": "decimals", "value": 3}, {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "gradient"}}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}, {"color": "red", "value": 10}]}}]},
-          {"matcher": {"id": "byName", "options": "avg_latency_sec"}, "properties": [{"id": "unit", "value": "s"}, {"id": "decimals", "value": 4}, {"id": "custom.cellOptions", "value": {"type": "gauge", "mode": "gradient"}}, {"id": "max", "value": 0.2}]}
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "req_per_sec"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "reqps"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 10
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "avg_latency_sec"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 4
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "max",
+                "value": 0.2
+              }
+            ]
+          }
         ]
       },
-      "options": {"showHeader": true, "cellHeight": "sm"}
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "description": "HTTP handlers \u2014 rate vs avg latency (SQL joined). Reference: https://grafana.com/docs/grafana/latest/panels-visualizations/query-transform-data/expression-queries/#sql-expressions"
     }
   ]
 }
