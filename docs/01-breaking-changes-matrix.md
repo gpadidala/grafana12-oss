@@ -1,12 +1,12 @@
-# Grafana `11.6.4` → `12.4.1` — Complete Breaking-Changes + Validation Playbook
+# Grafana `11.6.4` → `12.4.3` — Complete Breaking-Changes + Validation Playbook
 ## For Claude Code — every item is actionable, each has a validator, fix, and pass/fail gate
 
-**Source of truth:** Grafana releases `v12.0.x` → `v12.4.1` (tag `v12.4.1`, released 09 Mar), plus the per-minor "What's new" breaking-change sections (Grafana stopped publishing a dedicated breaking-changes page at v12.0 — the what's-new pages are authoritative).
+**Source of truth:** Grafana releases `v12.0.x` → `v12.4.3` (tag `v12.4.3`, released 09 Mar), plus the per-minor "What's new" breaking-change sections (Grafana stopped publishing a dedicated breaking-changes page at v12.0 — the what's-new pages are authoritative).
 
 **Convention for every item below:**
 - 🔴 **BREAKING** — will break if ignored
 - 🟠 **BEHAVIORAL** — behavior change, may surprise users
-- 🟡 **DEPRECATED** — still works in 12.4.1 but removal planned (13.0 kills several)
+- 🟡 **DEPRECATED** — still works in 12.4.3 but removal planned (13.0 kills several)
 
 Every item has:
 1. **What breaks**
@@ -23,7 +23,7 @@ Run order: run §0 env setup once, then every item's **Detect** step during `mak
 ```bash
 # Set these once; every script below reads them
 export GRAFANA_URL_OLD="https://grafana-old.internal"     # 11.6.4
-export GRAFANA_URL_NEW="https://grafana.internal"         # 12.4.1 target
+export GRAFANA_URL_NEW="https://grafana.internal"         # 12.4.3 target
 export GRAFANA_TOKEN="$(cat ~/.grafana/admin.token)"      # service account token w/ Admin
 export RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
 export OUT="./out/${RUN_ID}"
@@ -86,7 +86,7 @@ python3 migration/20_angular_purge.py \
   --replacements config/angular-replacements.yaml \
   --out "${OUT}/fix/angular-rewrites/"
 
-# 2c — force-save every core Angular panel dashboard AFTER 12.4.1 cutover
+# 2c — force-save every core Angular panel dashboard AFTER 12.4.3 cutover
 #      (Grafana auto-migrates on load; save is what persists it)
 python3 migration/20_angular_purge.py --phase save-migrations \
   --url "${GRAFANA_URL_NEW}"
@@ -371,10 +371,10 @@ find plugins/custom -name "plugin.json" -exec \
 
 **Fix:**
 ```bash
-# Update each plugin.json to declare a valid 12.4.1-compatible range
+# Update each plugin.json to declare a valid 12.4.3-compatible range
 # Example: ">=11.0.0 <13.0.0"
 python3 migration/fix_plugin_dependency.py \
-  --target "12.4.1" \
+  --target "12.4.3" \
   --root plugins/custom/
 ```
 
@@ -468,7 +468,7 @@ curl -s "${MIMIR_URL}/prometheus/config/v1/rules" \
 
 **Fix:**
 ```bash
-# Confirm the new prefix against a live 12.4.1 instance
+# Confirm the new prefix against a live 12.4.3 instance
 gapi "${GRAFANA_URL_NEW}" /metrics \
   | grep -E 'alertmanager_(cluster|peer)' \
   > "${OUT}/fix/11-new-am-metrics.txt"
@@ -512,7 +512,7 @@ python3 migration/rewrite_scenes_selectors.py --root validation/
 
 **Validate:**
 ```bash
-# Every validation k6 / Playwright script passes against 12.4.1
+# Every validation k6 / Playwright script passes against 12.4.3
 npx playwright test --config validation/playwright.config.ts
 ```
 
@@ -588,7 +588,7 @@ grep -rn 'cache_size' observability/ dashboards/ \
 
 **Fix:**
 ```bash
-# Find replacement metric names on the running 12.4.1 instance
+# Find replacement metric names on the running 12.4.3 instance
 gapi "${GRAFANA_URL_NEW}" /metrics | grep -iE '^grafana.*cache'
 
 # Update panels — typical mapping is grafana_cache_gets_total /
@@ -628,7 +628,7 @@ python3 migration/rewrite_am_endpoints.py \
 
 **Validate:**
 ```bash
-# Every rewritten call exits 0 against 12.4.1
+# Every rewritten call exits 0 against 12.4.3
 bash ci/replay-am-calls.sh "${GRAFANA_URL_NEW}"
 ```
 
@@ -776,7 +776,7 @@ grep -rnE '<a href=|<img src=' <your-instrumentation-repos>/ \
 
 ## 24. 🟡 `/api` path deprecated in favor of `/apis` (warned in 12; removed path-by-path in 13)
 
-**Action:** Migrate all automation that hits `/api/dashboards/...`, `/api/folders/...` to the new `/apis/dashboard.grafana.app/...` and `/apis/folder.grafana.app/...` namespaced endpoints. These coexist in 12.4.1.
+**Action:** Migrate all automation that hits `/api/dashboards/...`, `/api/folders/...` to the new `/apis/dashboard.grafana.app/...` and `/apis/folder.grafana.app/...` namespaced endpoints. These coexist in 12.4.3.
 
 ```bash
 grep -rnE 'https?://[^ ]+/api/(dashboards|folders|datasources)' \
@@ -813,7 +813,7 @@ grep -rnE '/api/datasources/[0-9]+(/|"|\s)' terraform/ ci/ scripts/
 
 ---
 
-# PART D — ONE-SHOT POST-CUTOVER FIXES (must run on the new 12.4.1 instance)
+# PART D — ONE-SHOT POST-CUTOVER FIXES (must run on the new 12.4.3 instance)
 
 ## 29. 🔴 Force-save every auto-migrated Angular dashboard (12.0+)
 
@@ -925,7 +925,7 @@ Every Python stub Claude Code creates must:
 **Canonical sources (Claude Code: re-fetch these at audit time to catch any late-breaking patch-level notices)**
 
 - Releases index: `https://github.com/grafana/grafana/releases`
-- `v12.4.1` tag: `https://github.com/grafana/grafana/releases/tag/v12.4.1`
+- `v12.4.3` tag: `https://github.com/grafana/grafana/releases/tag/v12.4.3`
 - Full changelog: `https://raw.githubusercontent.com/grafana/grafana/main/CHANGELOG.md`
 - What's new 12.0: `https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-0/`
 - What's new 12.1: `https://grafana.com/docs/grafana/latest/whatsnew/whats-new-in-v12-1/`

@@ -1,6 +1,6 @@
 # grafana12-oss
 
-Everything you need to migrate Grafana OSS from **11.6.4 to 12.4.1** — the production runbook plus a self-contained Docker Compose lab with 34 dashboards, LGTM + exporters wired end-to-end, and a 30-item breaking-change gate you can run against your real instance.
+Everything you need to migrate Grafana OSS from **11.6.4 to 12.4.3** — the production runbook plus a self-contained Docker Compose lab with 34 dashboards, LGTM + exporters wired end-to-end, and a 30-item breaking-change gate you can run against your real instance.
 
 Repo split:
 
@@ -74,7 +74,7 @@ Open **http://localhost:3012** — lands on the *v12 Upgrade Overview* (anonymou
 - `.\setup.ps1` (Windows) — bootstraps `.env` and runs `docker compose` for you
 - `./setup.sh` (macOS / Linux) — same as setup.ps1
 
-The compose file has built-in defaults for every image tag — `${POSTGRES_TAG:-16-alpine}`, `${GRAFANA_IMAGE_TAG:-12.4.1}`, etc. — so even if `.env` is missing the build won't fail with blank tags. Only the Grafana admin password + secret key need to come from `.env`.
+The compose file has built-in defaults for every image tag — `${POSTGRES_TAG:-16-alpine}`, `${GRAFANA_IMAGE_TAG:-12.4.3}`, etc. — so even if `.env` is missing the build won't fail with blank tags. Only the Grafana admin password + secret key need to come from `.env`.
 
 ---
 
@@ -93,7 +93,7 @@ Every dashboard is hand-built and has **real queries against live lab data**. No
 
 | | Dashboard |
 |---|---|
-| 🔴 | [Pre / Post Upgrade Comparison](http://localhost:3012/d/v12-admin-prepost) — 11.6.4 baseline vs 12.4.1 live with add/remove diffs |
+| 🔴 | [Pre / Post Upgrade Comparison](http://localhost:3012/d/v12-admin-prepost) — 11.6.4 baseline vs 12.4.3 live with add/remove diffs |
 | 🔴 | [Migration Readiness Scorecard](http://localhost:3012/d/v12-admin-readiness) — single-pane GO/NO-GO |
 | 🔴 | [Breaking Changes Tracker](http://localhost:3012/d/v12-admin-bct) — all 30 playbook items visualized |
 | 🔴 | [Angular & Plugin Deep Audit](http://localhost:3012/d/v12-admin-angular) |
@@ -123,7 +123,7 @@ Run `make dashboards` in `lab/` to print every URL grouped by tag.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  localhost:3012   Grafana 12.4.1 (grafana-oss)                               │
+│  localhost:3012   Grafana 12.4.3 (grafana-oss)                               │
 │                   ├─ 3 plugins preinstalled: Infinity DS / Polystat / Clock  │
 │                   ├─ 5 datasources provisioned                                │
 │                   └─ 34 dashboards in one folder                              │
@@ -214,7 +214,7 @@ Lab ships with **insecure defaults on** so it works through a corporate proxy wi
 
 ## 6. Production migration toolkit
 
-The repo is wired for a real 11.6.4 → 12.4.1 cutover on AKS + GKE, independent of the lab:
+The repo is wired for a real 11.6.4 → 12.4.3 cutover on AKS + GKE, independent of the lab:
 
 ```
 docs/01-breaking-changes-matrix.md      30-item playbook — every breaking change
@@ -377,7 +377,7 @@ See §1 — the `--env-file` + `-f` flags make the invocation work from anywhere
 2. **Never** force-push to the Git Sync repo.
 3. **Never** run destructive commands without `CONFIRM=yes`.
 4. **Never** skip the Angular audit — cost of a missed Angular dashboard is unrecoverable UX regression.
-5. **Never** pin to minor version; always exact patch (e.g. `12.4.1`, not `12.4`).
+5. **Never** pin to minor version; always exact patch (e.g. `12.4.3`, not `12.4`).
 6. **Never** use `latest` or unpinned chart versions.
 7. **Never** commit secrets — `.env` is gitignored; only `.env.example` gets committed.
 8. Keep the 11.6.4 `pg_dump` as source of truth for rollback for **30 days**.

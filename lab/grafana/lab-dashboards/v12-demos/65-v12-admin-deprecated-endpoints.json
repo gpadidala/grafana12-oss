@@ -1,7 +1,7 @@
 {
   "uid": "v12-admin-endpoints",
   "title": "Grafana 12 Admin \u2014 Deprecated API / Endpoint Scanner",
-  "description": "Every endpoint that 11.6.4 \u2192 12.4.1 either REMOVED or DEPRECATED. Each tile queries the live instance and reports HTTP status so you can confirm the old paths are gone (or still lingering).",
+  "description": "Every endpoint that 11.6.4 \u2192 12.4.3 either REMOVED or DEPRECATED. Each tile queries the live instance and reports HTTP status so you can confirm the old paths are gone (or still lingering).",
   "tags": [
     "grafana-12",
     "admin",

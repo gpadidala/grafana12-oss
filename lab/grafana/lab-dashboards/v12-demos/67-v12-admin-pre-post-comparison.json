@@ -1,7 +1,7 @@
 {
   "uid": "v12-admin-prepost",
   "title": "Grafana 12 Admin \u2014 Pre / Post Upgrade Comparison (plugins + dashboards)",
-  "description": "Side-by-side inventory of the 11.6.4 instance vs the live 12.4.1 instance. The 'pre' side is a baseline snapshot embedded inline (edit the pre-panel JSON to swap in your own audit output). The 'post' side live-queries /api/plugins and /api/search. Bottom panels compute additions and removals.",
+  "description": "Side-by-side inventory of the 11.6.4 instance vs the live 12.4.3 instance. The 'pre' side is a baseline snapshot embedded inline (edit the pre-panel JSON to swap in your own audit output). The 'post' side live-queries /api/plugins and /api/search. Bottom panels compute additions and removals.",
   "tags": [
     "grafana-12",
     "admin",
@@ -46,7 +46,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "### What this dashboard does\n\n- **Left column = 11.6.4 baseline** \u2014 inline JSON, representing a typical pre-upgrade instance. Replace it with your real audit output (`out/audit-*/plugin_inventory.summary.json` and `out/audit-*/dashboard_inventory.summary.json`) by pasting into the *Query \u2192 Data \u2192 Inline data* field of any baseline panel.\n- **Right column = 12.4.1 live** \u2014 queries the running instance through the Infinity DS.\n- **Diff panels** (bottom) compute *removed* (in baseline, not in live \u2014 usually Angular plugins the migration purged) and *added* (new in 12.4.1 \u2014 usually Drilldown apps + replacements).\n\nAll counts are live. Refresh to re-query."
+        "content": "### What this dashboard does\n\n- **Left column = 11.6.4 baseline** \u2014 inline JSON, representing a typical pre-upgrade instance. Replace it with your real audit output (`out/audit-*/plugin_inventory.summary.json` and `out/audit-*/dashboard_inventory.summary.json`) by pasting into the *Query \u2192 Data \u2192 Inline data* field of any baseline panel.\n- **Right column = 12.4.3 live** \u2014 queries the running instance through the Infinity DS.\n- **Diff panels** (bottom) compute *removed* (in baseline, not in live \u2014 usually Angular plugins the migration purged) and *added* (new in 12.4.3 \u2014 usually Drilldown apps + replacements).\n\nAll counts are live. Refresh to re-query."
       }
     },
     {
@@ -160,7 +160,7 @@
     {
       "id": 13,
       "type": "stat",
-      "title": "Post (12.4.1) \u2014 plugin count",
+      "title": "Post (12.4.3) \u2014 plugin count",
       "gridPos": {
         "h": 4,
         "w": 6,
@@ -408,7 +408,7 @@
     {
       "id": 16,
       "type": "table",
-      "title": "POST \u2014 12.4.1 plugin inventory (live)",
+      "title": "POST \u2014 12.4.3 plugin inventory (live)",
       "gridPos": {
         "h": 14,
         "w": 12,
@@ -1210,7 +1210,7 @@
     {
       "id": 26,
       "type": "table",
-      "title": "POST \u2014 12.4.1 dashboard inventory (live)",
+      "title": "POST \u2014 12.4.3 dashboard inventory (live)",
       "gridPos": {
         "h": 13,
         "w": 12,

@@ -160,8 +160,8 @@ services:
       dockerfile: Dockerfile
       args:
         <<: *proxy_build_args
-        GRAFANA_IMAGE_TAG: ${GRAFANA_IMAGE_TAG:-12.4.1}
-    image: grafana12-oss-lab/grafana:${GRAFANA_IMAGE_TAG:-12.4.1}
+        GRAFANA_IMAGE_TAG: ${GRAFANA_IMAGE_TAG:-12.4.3}
+    image: grafana12-oss-lab/grafana:${GRAFANA_IMAGE_TAG:-12.4.3}
     container_name: grafana12_grafana
     depends_on:
       postgres:

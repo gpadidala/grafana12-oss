@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Item 3 — migrate every legacy API key to a Service Account + token.
 
-Legacy /api/auth/keys are still usable in 12.4.1 but their role actions were
+Legacy /api/auth/keys are still usable in 12.4.3 but their role actions were
 removed in 12.3. Each key gets a paired service account + fresh token; the
 mapping is written so owners can rotate consumers via Vault before cutover.
 

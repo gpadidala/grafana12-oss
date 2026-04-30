@@ -13,7 +13,7 @@ from _lib import log  # noqa: E402
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--target", required=True, help="e.g. 12.4.1")
+    ap.add_argument("--target", required=True, help="e.g. 12.4.3")
     ap.add_argument("--root", required=True)
     args = ap.parse_args()
 

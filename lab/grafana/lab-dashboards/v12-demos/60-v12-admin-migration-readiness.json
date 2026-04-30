@@ -1,7 +1,7 @@
 {
   "uid": "v12-admin-readiness",
   "title": "Grafana 12 Admin \u2014 Migration Readiness Scorecard",
-  "description": "Single-pane GO/NO-GO for a 11.6.4 \u2192 12.4.1 cutover. Every tile fires a live query against the live instance: Angular plugins, Angular panels, datagrid panels, legacy API keys, removed-endpoint usage, deprecated panel types, schemaVersion distribution. RED on any tile = blocker.",
+  "description": "Single-pane GO/NO-GO for a 11.6.4 \u2192 12.4.3 cutover. Every tile fires a live query against the live instance: Angular plugins, Angular panels, datagrid panels, legacy API keys, removed-endpoint usage, deprecated panel types, schemaVersion distribution. RED on any tile = blocker.",
   "tags": [
     "grafana-12",
     "admin",

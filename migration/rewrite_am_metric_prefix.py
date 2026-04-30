@@ -2,7 +2,7 @@
 """Item 11 — rewrite HA Alertmanager cluster metric prefix across dashboards/rules.
 
 Builds a mapping from the `old` grep output to the `new` grep output (from the
-live 12.4.1 /metrics), applies in-place across --apply-to directories.
+live 12.4.3 /metrics), applies in-place across --apply-to directories.
 """
 from __future__ import annotations
 

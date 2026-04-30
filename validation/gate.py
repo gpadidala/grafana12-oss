@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Part E — consolidated 30-item GO/NO-GO gate.
 
-Reads artifacts from ${OUT}/audit + ${OUT}/fix, checks the live 12.4.1 instance,
+Reads artifacts from ${OUT}/audit + ${OUT}/fix, checks the live 12.4.3 instance,
 emits ${OUT}/validate/go-no-go.html plus a stdout summary. Exit 0 iff every 🔴
 (MUST) row passes. 🟠 rows warn; 🟡 rows are informational.
 """
@@ -268,7 +268,7 @@ SEVERITY_STYLE = {"MUST": "🔴", "SHOULD": "🟠", "INFO": "🟡"}
 
 
 def render_html(rows: list[dict], verdict: str) -> str:
-    head = """<!doctype html><meta charset=utf-8><title>Grafana 12.4.1 — GO/NO-GO gate</title>
+    head = """<!doctype html><meta charset=utf-8><title>Grafana 12.4.3 — GO/NO-GO gate</title>
 <style>
 body{font:14px system-ui;margin:2rem;color:#1a1a1a}
 h1 .v{padding:.2em .6em;border-radius:.4em}
@@ -280,7 +280,7 @@ th{background:#f5f5f5;text-align:left}
 tr.pass{background:#effbef}
 code{background:#eee;padding:.1em .3em;border-radius:.2em}
 </style>"""
-    body = [head, f'<h1>Grafana 12.4.1 GO/NO-GO gate <span class="v {verdict}">{verdict}</span></h1>',
+    body = [head, f'<h1>Grafana 12.4.3 GO/NO-GO gate <span class="v {verdict}">{verdict}</span></h1>',
             '<table><tr><th>#</th><th>Item</th><th>Sev</th><th>Status</th><th>Detail</th></tr>']
     for r in rows:
         cls = "pass" if r["passed"] else {"MUST": "r", "SHOULD": "w", "INFO": "i"}[r["severity"]]
