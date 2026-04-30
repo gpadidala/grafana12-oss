@@ -1,48 +1,48 @@
 {
   "uid": "v12-1-advisor-v2",
   "title": "Grafana 12.1 — Grafana Advisor (with Update Status)",
-  "description": "Copy of /d/v12-1-advisor with the Plugin Health panel extended: derives an Update Status (Updated/Not Updated/Not Available) by comparing the locally installed version against the latest version on grafana.com, and adds the Grafana Dependency column from the marketplace metadata. Original dashboard is unchanged.",
+  "description": "Copy of /d/v12-1-advisor with the Plugin Health panel extended: derives Update Status (Updated / Not Updated / Not Available) by joining the local plugin inventory against grafana.com marketplace metadata. Pure-transformation pipeline — no SQL expression — so the Infinity DS's type:json field doesn't collide with Grafana's expression service.",
   "tags": ["grafana-12", "v12.1", "advisor", "plugin-health", "v12-demo"],
   "schemaVersion": 40,
-  "version": 1,
+  "version": 2,
   "editable": true,
   "refresh": "1m",
   "time": {"from": "now-15m", "to": "now"},
   "timepicker": {},
   "templating": {"list": [
-    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}},
-    {"name": "ds_api",  "type": "datasource", "query": "yesoreyeram-infinity-datasource", "refresh": 1, "current": {"text": "Grafana API (Infinity)", "value": "grafana-api"}}
+    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
   ]},
   "panels": [
     {
       "id": 1, "type": "text", "title": "",
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
-      "options": {"mode": "markdown", "content": "### Grafana Advisor (12.1) — with Update Status\n\nThis dashboard is a **copy** of [/d/v12-1-advisor](/d/v12-1-advisor) with two enhancements on the Plugin Health panel:\n\n1. **Update Status** column — derived in a SQL expression that compares `Installed Version` (from local `/api/plugins`) against `Latest Version Available` (from grafana.com `/api/plugins`). Color-mapped via field override:\n   - 🟢 **Updated** — versions match\n   - 🔴 **Not Updated** — versions differ\n   - 🟠 **Not Available** — plugin not on the public marketplace (private / internal build)\n2. **Grafana Dependency** column — populated from the grafana.com marketplace metadata where available.\n\n**Per-row API iteration limitation (per spec):** the Infinity DS does not support per-row HTTP calls. Both extra columns are sourced from a **single batch query** to `https://grafana.com/api/plugins` and then JOINed against the local plugin inventory in a SQL expression (refId `JOINED`).\n\n**Why some `Grafana Dependency` cells are empty:** the marketplace LIST endpoint (`/api/plugins`) does **not** expose the `grafanaDependency` field — that field is only available on the per-plugin endpoint (`/api/plugins/<slug>`). Iterating one HTTP call per plugin from inside a Grafana panel isn't supported by Infinity, so empty cells render as `Not Available` via the field override.\n\n**Requires:** the lab provisions two Infinity datasources — `grafana-api` (UID, points at localhost) and `grafana-com` (UID, points at https://grafana.com with `allowedHosts` whitelist).\n\n- **[➡ Open Advisor](/a/grafana-advisor-app)** — runs a fresh health pass and reports plugin / DS / SSO / dashboard issues."}
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 0},
+      "options": {"mode": "markdown", "content": "### Grafana Advisor (12.1) — with Update Status\n\nThis dashboard is a **copy** of [/d/v12-1-advisor](/d/v12-1-advisor) with two enhancements on the Plugin Health panel:\n\n1. **Update Status** — column derived by joining the locally installed plugins against the grafana.com marketplace and comparing versions. Color-mapped:\n   - 🟢 **Updated** (1) — installed version matches latest on grafana.com\n   - 🔴 **Not Updated** (0) — versions differ → there's an update available\n   - 🟠 **Not Available** — plugin not in the public marketplace (private / internal build)\n2. **Grafana Dependency** — sourced from grafana.com marketplace metadata.\n\n**Implementation note:** the Infinity DS has a `type: \"json\"` field on every query that conflicts with Grafana's SQL Expression engine (which uses `type` for the expression command). To avoid that collision, this panel uses **pure Grafana transformations** to JOIN the two queries (`joinByField` outer-join on `plugin_id`) + a `calculateField` binary `Is equal` to derive the Updated flag. Map-values transformation converts the numeric flag to the colored text status.\n\n**Per-row API iteration:** as the spec notes, the Infinity DS does not iterate per row. The marketplace LIST endpoint (`/api/plugins`) does **not** expose `grafanaDependency` — that field is only on the per-plugin endpoint (`/api/plugins/<slug>`). So the Grafana Dependency column will show `Not Available` for most rows; only plugins where the field happens to be in the list response are populated.\n\n- **[➡ Open Advisor](/a/grafana-advisor-app)** — built-in health scanner."}
     },
 
     {
       "id": 2, "type": "table",
       "title": "Plugin Health (Feeds Advisor) — with Update Status + Grafana Dependency",
-      "description": "Each row joins local /api/plugins (installed version + signature) against grafana.com /api/plugins (latest version + grafanaDependency). The Update Status column is computed in the SQL expression: 'Updated' when versions match, 'Not Updated' when they differ, 'Not Available' when the plugin is not on grafana.com. Color mapping is applied via field override.",
-      "gridPos": {"h": 22, "w": 24, "x": 0, "y": 8},
-      "datasource": {"uid": "__expr__", "type": "__expr__"},
+      "description": "Joins local /api/plugins against grafana.com /api/plugins by plugin_id. The Updated column is computed by the calculateField transformation (binary equality between Installed Version and Latest Version Available). Field override applies value mappings (Updated → green / Not Updated → red / Not Available → orange) + color-background cell.",
+      "gridPos": {"h": 22, "w": 24, "x": 0, "y": 9},
+      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
       "targets": [
         {
           "refId": "LOCAL",
-          "datasource": {"uid": "${ds_api}", "type": "yesoreyeram-infinity-datasource"},
+          "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
           "type": "json",
           "source": "url",
           "url": "/api/plugins?embedded=0",
           "url_options": {"method": "GET"},
           "parser": "backend",
           "root_selector": "",
+          "format": "table",
           "columns": [
-            {"selector": "id",            "text": "plugin_id",        "type": "string"},
-            {"selector": "name",          "text": "name",             "type": "string"},
-            {"selector": "type",          "text": "type",             "type": "string"},
-            {"selector": "info.version",  "text": "installed_version","type": "string"},
-            {"selector": "signatureType", "text": "signature",        "type": "string"},
-            {"selector": "angularDetected","text": "angular",         "type": "boolean"}
+            {"selector": "id",             "text": "plugin_id",         "type": "string"},
+            {"selector": "name",           "text": "name",              "type": "string"},
+            {"selector": "type",           "text": "plugin_type",       "type": "string"},
+            {"selector": "info.version",   "text": "installed_version", "type": "string"},
+            {"selector": "signatureType",  "text": "signature",         "type": "string"},
+            {"selector": "angularDetected","text": "angular",           "type": "boolean"}
           ]
         },
         {
@@ -54,17 +54,59 @@
           "url_options": {"method": "GET"},
           "parser": "backend",
           "root_selector": "items",
+          "format": "table",
           "columns": [
-            {"selector": "slug",              "text": "plugin_id",         "type": "string"},
-            {"selector": "version",           "text": "latest_version",    "type": "string"},
-            {"selector": "grafanaDependency", "text": "grafana_dependency","type": "string"}
+            {"selector": "slug",              "text": "plugin_id",          "type": "string"},
+            {"selector": "version",           "text": "latest_version",     "type": "string"},
+            {"selector": "grafanaDependency", "text": "grafana_dependency", "type": "string"}
           ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {"byField": "plugin_id", "mode": "outer"}
         },
         {
-          "refId": "JOINED",
-          "datasource": {"uid": "__expr__", "type": "__expr__"},
-          "type": "sql",
-          "expression": "SELECT LOCAL.plugin_id AS \"Plugin ID\", LOCAL.name AS \"Name\", LOCAL.type AS \"Type\", LOCAL.installed_version AS \"Installed Version\", MARKETPLACE.latest_version AS \"Latest Version Available\", CASE WHEN MARKETPLACE.latest_version IS NULL THEN 'Not Available' WHEN LOCAL.installed_version = MARKETPLACE.latest_version THEN 'Updated' ELSE 'Not Updated' END AS \"Update Status\", MARKETPLACE.grafana_dependency AS \"Grafana Dependency\", LOCAL.signature AS \"Signature\", LOCAL.angular AS \"Angular\" FROM LOCAL LEFT JOIN MARKETPLACE ON LOCAL.plugin_id = MARKETPLACE.plugin_id ORDER BY LOCAL.plugin_id"
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {"names": ["plugin_id", "name", "plugin_type", "installed_version", "latest_version", "grafana_dependency", "signature", "angular"]}
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "binary",
+            "binary": {
+              "left": "installed_version",
+              "operator": "==",
+              "right": "latest_version"
+            },
+            "alias": "match",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "plugin_id":          "Plugin ID",
+              "name":               "Name",
+              "plugin_type":        "Type",
+              "installed_version":  "Installed Version",
+              "latest_version":     "Latest Version Available",
+              "match":              "Update Status",
+              "grafana_dependency": "Grafana Dependency",
+              "signature":          "Signature",
+              "angular":            "Angular"
+            },
+            "indexByName": {
+              "plugin_id": 0, "name": 1, "plugin_type": 2,
+              "installed_version": 3, "latest_version": 4,
+              "match": 5, "grafana_dependency": 6,
+              "signature": 7, "angular": 8
+            }
+          }
         }
       ],
       "fieldConfig": {
@@ -81,15 +123,12 @@
             "properties": [
               {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}},
               {"id": "mappings", "value": [
-                {"type": "value", "options": {
-                  "Updated":       {"color": "green",  "index": 0, "text": "Updated"},
-                  "Not Updated":   {"color": "red",    "index": 1, "text": "Not Updated"},
-                  "Not Available": {"color": "orange", "index": 2, "text": "Not Available"}
-                }}
+                {"type": "value",   "options": {"1":  {"color": "green",  "index": 0, "text": "Updated"}}},
+                {"type": "value",   "options": {"0":  {"color": "red",    "index": 1, "text": "Not Updated"}}},
+                {"type": "special", "options": {"match": "null+nan", "result": {"color": "orange", "index": 2, "text": "Not Available"}}}
               ]},
-              {"id": "color", "value": {"mode": "thresholds"}},
-              {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "transparent", "value": null}]}},
-              {"id": "custom.width", "value": 140}
+              {"id": "custom.width", "value": 140},
+              {"id": "noValue", "value": "Not Available"}
             ]
           },
           {
@@ -156,13 +195,13 @@
         "showHeader": true,
         "cellHeight": "sm",
         "footer": {"show": true, "reducer": ["count"], "fields": ["Update Status"]},
-        "sortBy": [{"displayName": "Update Status", "desc": true}]
+        "sortBy": [{"displayName": "Update Status", "desc": false}]
       }
     },
 
     {
       "id": 3, "type": "stat", "title": "Data sources configured",
-      "gridPos": {"h": 5, "w": 12, "x": 0, "y": 30},
+      "gridPos": {"h": 5, "w": 12, "x": 0, "y": 31},
       "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
       "targets": [{"refId": "A", "expr": "grafana_datasource_request_duration_seconds_count", "instant": true, "format": "table"}],
       "transformations": [{"id": "reduce", "options": {"reducers": ["count"], "labelsToFields": false}}],
@@ -171,7 +210,7 @@
     },
     {
       "id": 4, "type": "stat", "title": "Plugins with load errors (Advisor: BLOCKER)",
-      "gridPos": {"h": 5, "w": 12, "x": 12, "y": 30},
+      "gridPos": {"h": 5, "w": 12, "x": 12, "y": 31},
       "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
       "targets": [{"refId": "A", "expr": "sum(grafana_plugin_load_errors) or on() vector(0)"}],
       "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"},
