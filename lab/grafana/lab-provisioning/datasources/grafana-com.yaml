@@ -1,0 +1,16 @@
+apiVersion: 1
+datasources:
+  - name: Grafana.com Marketplace
+    uid: grafana-com
+    # Second Infinity DS — no base URL set, so each query supplies the full https://grafana.com/...
+    # path. Used by the v12-1-advisor-v2 dashboard to fetch plugin metadata
+    # (latestVersion + grafanaDependency) for the Update Status column.
+    type: yesoreyeram-infinity-datasource
+    isDefault: false
+    editable: true
+    jsonData:
+      auth_method: none
+      allowedHosts:
+        - https://grafana.com
+      tlsSkipVerify: true
+      timeoutInSeconds: 30
