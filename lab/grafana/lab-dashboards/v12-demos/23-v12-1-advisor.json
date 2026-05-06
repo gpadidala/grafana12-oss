@@ -145,11 +145,25 @@
           },
           {
             "matcher": {"id": "byName", "options": "Installed Version"},
-            "properties": [{"id": "custom.width", "value": 130}]
+            "properties": [
+              {"id": "custom.width", "value": 150},
+              {"id": "mappings", "value": [
+                {"type": "special", "options": {"match": "empty",    "result": {"text": "Bundled (12.4.3)"}}},
+                {"type": "special", "options": {"match": "null+nan", "result": {"text": "Bundled (12.4.3)"}}}
+              ]},
+              {"id": "noValue", "value": "Bundled (12.4.3)"}
+            ]
           },
           {
             "matcher": {"id": "byName", "options": "Latest Version Available"},
-            "properties": [{"id": "custom.width", "value": 160}]
+            "properties": [
+              {"id": "custom.width", "value": 180},
+              {"id": "mappings", "value": [
+                {"type": "special", "options": {"match": "empty",    "result": {"text": "Bundled with Grafana"}}},
+                {"type": "special", "options": {"match": "null+nan", "result": {"text": "Bundled with Grafana"}}}
+              ]},
+              {"id": "noValue", "value": "Bundled with Grafana"}
+            ]
           },
           {
             "matcher": {"id": "byName", "options": "Grafana Dependency"},
