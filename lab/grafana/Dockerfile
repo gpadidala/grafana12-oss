@@ -21,12 +21,23 @@ COPY --chown=grafana:root lab-provisioning/ /etc/grafana/provisioning/
 COPY --chown=grafana:root lab-dashboards/   /usr/share/grafana-dashboards/
 
 # Bake the plugins required by provisioned datasources + dashboards INTO the
-# image. This makes lab bring-up independent of runtime grafana.com access:
-# no proxy / DNS / startup-race surprises, and the YAML datasources resolve
-# their type immediately on first boot.
+# image. The .zip files ship in the repo (lab/grafana/plugins-bundle/) so the
+# build does not need internet access — works on corporate networks behind a
+# TLS-intercepting proxy where `grafana cli plugins install` fails with
+# "x509: certificate signed by unknown authority".
+ARG TARGETARCH
+COPY --chown=grafana:root plugins-bundle/ /tmp/plugins-bundle/
 USER root
-RUN grafana cli plugins install yesoreyeram-infinity-datasource \
- && grafana cli plugins install grafana-polystat-panel \
- && grafana cli plugins install grafana-clock-panel \
- && chown -R grafana:root /var/lib/grafana/plugins
+RUN mkdir -p /var/lib/grafana/plugins && \
+    if [ "$TARGETARCH" = "arm64" ]; then \
+      unzip -q /tmp/plugins-bundle/infinity-arm64.zip -d /var/lib/grafana/plugins && \
+      unzip -q /tmp/plugins-bundle/polystat-arm64.zip -d /var/lib/grafana/plugins && \
+      unzip -q /tmp/plugins-bundle/clock-arm64.zip    -d /var/lib/grafana/plugins ; \
+    else \
+      unzip -q /tmp/plugins-bundle/infinity.zip -d /var/lib/grafana/plugins && \
+      unzip -q /tmp/plugins-bundle/polystat.zip -d /var/lib/grafana/plugins && \
+      unzip -q /tmp/plugins-bundle/clock.zip    -d /var/lib/grafana/plugins ; \
+    fi && \
+    rm -rf /tmp/plugins-bundle && \
+    chown -R grafana:root /var/lib/grafana/plugins
 USER grafana
