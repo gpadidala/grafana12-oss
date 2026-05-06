@@ -4,7 +4,7 @@
   "description": "Enterprise-grade health & inventory dashboard for the v12.1 Grafana Advisor. KPIs (totals by category, signature, Angular), distribution charts, full plugin inventory with marketplace cross-reference (installed vs latest, publisher, downloads, update flag), and plugin runtime activity (request rate + datasource latency).",
   "tags": ["grafana-12", "v12.1", "advisor", "plugin-health", "v12-demo"],
   "schemaVersion": 39,
-  "version": 8,
+  "version": 9,
   "editable": true,
   "refresh": "1m",
   "time": {"from": "now-1h", "to": "now"},
@@ -15,24 +15,29 @@
       "label": "Prometheus",
       "type": "datasource",
       "query": "prometheus",
+      "current": {"selected": false, "text": "Prometheus", "value": "prom"},
       "refresh": 1,
       "hide": 0
     },
     {
       "name": "ds_grafana_api",
       "label": "Grafana API (Infinity)",
-      "description": "Infinity datasource pointing at this Grafana's own /api/plugins endpoint. Configure with allowedHosts including your Grafana base URL.",
+      "description": "Infinity DS pointing at this Grafana's own /api/plugins. Configure with allowedHosts including the Grafana base URL.",
       "type": "datasource",
       "query": "yesoreyeram-infinity-datasource",
+      "regex": "/^(?!.*[Mm]arketplace)(?!.*grafana\\.com).*$/",
+      "current": {"selected": false, "text": "Grafana API (Infinity)", "value": "grafana-api"},
       "refresh": 1,
       "hide": 0
     },
     {
       "name": "ds_grafana_com",
       "label": "grafana.com Marketplace (Infinity)",
-      "description": "Infinity datasource pointing at https://grafana.com/api/plugins (no auth). Configure with allowedHosts including https://grafana.com.",
+      "description": "Infinity DS pointing at https://grafana.com/api/plugins (no auth). Configure with allowedHosts including https://grafana.com.",
       "type": "datasource",
       "query": "yesoreyeram-infinity-datasource",
+      "regex": "/(?:[Mm]arketplace|grafana\\.com)/",
+      "current": {"selected": false, "text": "Grafana.com Marketplace", "value": "grafana-com"},
       "refresh": 1,
       "hide": 0
     }
