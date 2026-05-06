@@ -3,8 +3,8 @@
   "title": "Grafana 12.1 — Grafana Advisor",
   "description": "Enterprise-grade health & inventory dashboard for the v12.1 Grafana Advisor. KPIs (totals by category, signature, Angular), distribution charts, full plugin inventory with marketplace cross-reference (installed vs latest, publisher, downloads, update flag), and plugin runtime activity (request rate + datasource latency).",
   "tags": ["grafana-12", "v12.1", "advisor", "plugin-health", "v12-demo"],
-  "schemaVersion": 40,
-  "version": 7,
+  "schemaVersion": 39,
+  "version": 8,
   "editable": true,
   "refresh": "1m",
   "time": {"from": "now-1h", "to": "now"},
@@ -375,7 +375,7 @@
         "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true, "align": "auto"}},
         "overrides": [
           {"matcher": {"id": "byName", "options": "Update Status"}, "properties": [
-            {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}},
+            {"id": "custom.cellOptions", "value": {"type": "color-background"}},
             {"id": "mappings", "value": [
               {"type": "value",   "options": {"1": {"color": "green",  "index": 0, "text": "Updated"}}},
               {"type": "value",   "options": {"0": {"color": "red",    "index": 1, "text": "Not Updated"}}},

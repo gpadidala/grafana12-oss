@@ -1,0 +1,1945 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    },
+    {
+      "name": "DS_GRAFANA_API",
+      "label": "Grafana API (Infinity)",
+      "description": "Infinity datasource with allowedHosts including this Grafana's base URL (typically http://grafana:3000 inside the cluster). Used to query /api/plugins for the local plugin inventory.",
+      "type": "datasource",
+      "pluginId": "yesoreyeram-infinity-datasource",
+      "pluginName": "Infinity"
+    },
+    {
+      "name": "DS_GRAFANA_COM",
+      "label": "grafana.com Marketplace (Infinity)",
+      "description": "Infinity datasource with allowedHosts including https://grafana.com. Auth: none.",
+      "type": "datasource",
+      "pluginId": "yesoreyeram-infinity-datasource",
+      "pluginName": "Infinity"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "11.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "yesoreyeram-infinity-datasource",
+      "name": "Infinity",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "bargauge",
+      "name": "Bar gauge",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "piechart",
+      "name": "Pie chart",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "text",
+      "name": "Text",
+      "version": ""
+    }
+  ],
+  "uid": "v12-1-advisor-shareable",
+  "title": "Grafana 12.1 \u2014 Grafana Advisor (Shareable Export)",
+  "description": "Portable export of the v12.1 Advisor dashboard. Compatible with Grafana 11.x and 12.x. Uses __inputs so the import dialog prompts for Prometheus + two Infinity datasources.",
+  "tags": [
+    "grafana-12",
+    "v12.1",
+    "advisor",
+    "plugin-health",
+    "v12-demo"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "refresh": "1m",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Grafana Advisor (12.1) \u2014 Plugin Health & Inventory\n\nThe **[\u27a1 Advisor app](/a/grafana-advisor-app)** runs a fresh health pass and reports plugin / DS / SSO / dashboard issues. This dashboard surfaces the underlying signals: **inventory totals**, **signature & Angular distribution**, a **full plugin table** with marketplace cross-reference, and **runtime activity** from Prometheus.\n\n- \ud83d\udfe2 **Updated** \u2014 installed version matches grafana.com latest &nbsp; \u00b7 &nbsp; \ud83d\udd34 **Not Updated** \u2014 newer version available &nbsp; \u00b7 &nbsp; \ud83d\udfe0 **Not Available** \u2014 bundled with Grafana / private build (not on marketplace)\n- **Has Update** uses Grafana's own background update check (`hasUpdate`) \u2014 independent of the marketplace JOIN."
+      }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Total plugins",
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 4
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ],
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Data sources",
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 4,
+        "y": 4
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0&type=datasource",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ],
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "Panels",
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 8,
+        "y": 4
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0&type=panel",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ],
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "Apps",
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 12,
+        "y": 4
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0&type=app",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ],
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "Signed (valid)",
+      "description": "Plugins where signature=valid (cryptographically signed external plugins). Internal/unsigned excluded.",
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 16,
+        "y": 4
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            },
+            {
+              "selector": "signature",
+              "text": "signature",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "signature",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^valid$"
+                  }
+                }
+              }
+            ],
+            "type": "include",
+            "match": "any"
+          }
+        },
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ],
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^plugin_id.*$/"
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 15,
+      "type": "stat",
+      "title": "Angular detected",
+      "description": "Plugins flagged angularDetected=true. Critical for v12 migration \u2014 Angular support removed in 12.0.",
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 20,
+        "y": 4
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            },
+            {
+              "selector": "angularDetected",
+              "text": "angular",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "angular",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^true$"
+                  }
+                }
+              }
+            ],
+            "type": "include",
+            "match": "any"
+          }
+        },
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ],
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^plugin_id.*$/"
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 20,
+      "type": "stat",
+      "title": "Updates available",
+      "description": "Plugins where Grafana's background update check (hasUpdate) is true.",
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 9
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            },
+            {
+              "selector": "hasUpdate",
+              "text": "has_update",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "has_update",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^true$"
+                  }
+                }
+              }
+            ],
+            "type": "include",
+            "match": "any"
+          }
+        },
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ],
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^plugin_id.*$/"
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 21,
+      "type": "stat",
+      "title": "Plugin load errors (Advisor: BLOCKER)",
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 9
+      },
+      "datasource": {
+        "uid": "${DS_PROMETHEUS}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "uid": "${DS_PROMETHEUS}",
+            "type": "prometheus"
+          },
+          "expr": "sum(grafana_plugin_load_errors) or on() vector(0)"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 22,
+      "type": "stat",
+      "title": "Bundled with Grafana",
+      "description": "Plugins where signature=internal (built-in panels and datasources).",
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 9
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            },
+            {
+              "selector": "signature",
+              "text": "signature",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "signature",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^internal$"
+                  }
+                }
+              }
+            ],
+            "type": "include",
+            "match": "any"
+          }
+        },
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ],
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^plugin_id.*$/"
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 23,
+      "type": "stat",
+      "title": "External plugins",
+      "description": "Plugins NOT signed as 'internal' (third-party / Grafana Labs add-ons / community).",
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 9
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            },
+            {
+              "selector": "signature",
+              "text": "signature",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "signature",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^internal$"
+                  }
+                }
+              }
+            ],
+            "type": "exclude",
+            "match": "any"
+          }
+        },
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ],
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^plugin_id.*$/"
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 30,
+      "type": "bargauge",
+      "title": "Plugins by Type",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 14
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            },
+            {
+              "selector": "type",
+              "text": "type",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "type": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "plugin_id": {
+                "aggregations": [
+                  "count"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 31,
+      "type": "bargauge",
+      "title": "Plugins by Signature",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 14
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            },
+            {
+              "selector": "signature",
+              "text": "signature",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "signature": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "plugin_id": {
+                "aggregations": [
+                  "count"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 32,
+      "type": "piechart",
+      "title": "Update availability (hasUpdate)",
+      "description": "Distribution of Grafana's own hasUpdate flag across all installed plugins.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 14
+      },
+      "datasource": {
+        "uid": "${DS_GRAFANA_API}",
+        "type": "yesoreyeram-infinity-datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            },
+            {
+              "selector": "hasUpdate",
+              "text": "has_update",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "has_update": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "plugin_id": {
+                "aggregations": [
+                  "count"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "options": {
+        "pieType": "donut",
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "true": {
+                  "text": "Update available",
+                  "color": "orange"
+                }
+              }
+            },
+            {
+              "type": "value",
+              "options": {
+                "false": {
+                  "text": "Up to date / bundled",
+                  "color": "green"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Plugin Health (feeds Advisor) \u2014 full inventory",
+      "description": "Joins local /api/plugins against grafana.com /api/plugins by plugin_id. Update Status is computed by transformation (binary equality between Installed Version and Latest Version Available). Has Update is Grafana's own background-check flag. Publisher / Downloads come from grafana.com marketplace metadata.",
+      "gridPos": {
+        "h": 24,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "datasource": {
+        "uid": "-- Mixed --",
+        "type": "datasource"
+      },
+      "targets": [
+        {
+          "refId": "LOCAL",
+          "datasource": {
+            "uid": "${DS_GRAFANA_API}",
+            "type": "yesoreyeram-infinity-datasource"
+          },
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "root_selector": "",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "plugin_id",
+              "type": "string"
+            },
+            {
+              "selector": "name",
+              "text": "name",
+              "type": "string"
+            },
+            {
+              "selector": "info.author.name",
+              "text": "author",
+              "type": "string"
+            },
+            {
+              "selector": "type",
+              "text": "plugin_type",
+              "type": "string"
+            },
+            {
+              "selector": "info.version",
+              "text": "installed_version",
+              "type": "string"
+            },
+            {
+              "selector": "hasUpdate",
+              "text": "has_update",
+              "type": "string"
+            },
+            {
+              "selector": "info.updated",
+              "text": "last_updated",
+              "type": "string"
+            },
+            {
+              "selector": "dependencies.grafanaDependency",
+              "text": "grafana_dep_local",
+              "type": "string"
+            },
+            {
+              "selector": "signature",
+              "text": "signature",
+              "type": "string"
+            },
+            {
+              "selector": "angularDetected",
+              "text": "angular",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "refId": "MARKETPLACE",
+          "datasource": {
+            "uid": "${DS_GRAFANA_COM}",
+            "type": "yesoreyeram-infinity-datasource"
+          },
+          "type": "json",
+          "source": "url",
+          "url": "https://grafana.com/api/plugins?orderBy=name&direction=asc",
+          "url_options": {
+            "method": "GET"
+          },
+          "parser": "backend",
+          "root_selector": "items",
+          "format": "table",
+          "columns": [
+            {
+              "selector": "slug",
+              "text": "plugin_id",
+              "type": "string"
+            },
+            {
+              "selector": "version",
+              "text": "latest_version",
+              "type": "string"
+            },
+            {
+              "selector": "orgName",
+              "text": "publisher",
+              "type": "string"
+            },
+            {
+              "selector": "downloads",
+              "text": "downloads",
+              "type": "number"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "plugin_id",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "binary",
+            "binary": {
+              "left": "installed_version",
+              "operator": "==",
+              "right": "latest_version"
+            },
+            "alias": "match",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "plugin_id": "Plugin",
+              "name": "Name",
+              "author": "Author",
+              "plugin_type": "Type",
+              "installed_version": "Installed Version",
+              "latest_version": "Latest Version Available",
+              "match": "Update Status",
+              "has_update": "Has Update",
+              "publisher": "Publisher",
+              "downloads": "Downloads",
+              "last_updated": "Last Updated",
+              "grafana_dep_local": "Grafana Dependency",
+              "signature": "Signature",
+              "angular": "Angular"
+            },
+            "indexByName": {
+              "plugin_id": 0,
+              "name": 1,
+              "author": 2,
+              "plugin_type": 3,
+              "installed_version": 4,
+              "latest_version": 5,
+              "match": 6,
+              "has_update": 7,
+              "publisher": 8,
+              "downloads": 9,
+              "last_updated": 10,
+              "grafana_dep_local": 11,
+              "signature": 12,
+              "angular": 13
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Update Status"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "1": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "Updated"
+                      }
+                    }
+                  },
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "color": "red",
+                        "index": 1,
+                        "text": "Not Updated"
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null+nan",
+                      "result": {
+                        "color": "orange",
+                        "index": 2,
+                        "text": "Not Available"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              },
+              {
+                "id": "noValue",
+                "value": "Not Available"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Has Update"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "true": {
+                        "text": "YES",
+                        "color": "orange"
+                      },
+                      "false": {
+                        "text": "\u2014",
+                        "color": "green"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Plugin"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 240
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Author"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Type"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Installed Version"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "empty",
+                      "result": {
+                        "text": "Bundled (12.4.3)"
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null+nan",
+                      "result": {
+                        "text": "Bundled (12.4.3)"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "noValue",
+                "value": "Bundled (12.4.3)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Latest Version Available"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 180
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "empty",
+                      "result": {
+                        "text": "Bundled with Grafana"
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null+nan",
+                      "result": {
+                        "text": "Bundled with Grafana"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "noValue",
+                "value": "Bundled with Grafana"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Publisher"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              },
+              {
+                "id": "noValue",
+                "value": "\u2014"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Downloads"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "noValue",
+                "value": "\u2014"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Last Updated"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "empty",
+                      "result": {
+                        "text": "\u2014"
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null+nan",
+                      "result": {
+                        "text": "\u2014"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "noValue",
+                "value": "\u2014"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Grafana Dependency"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 140
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "empty",
+                      "result": {
+                        "text": "\u2014"
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null+nan",
+                      "result": {
+                        "text": "\u2014"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "noValue",
+                "value": "\u2014"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Signature"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "valid": {
+                        "color": "green"
+                      },
+                      "internal": {
+                        "color": "purple"
+                      },
+                      "unsigned": {
+                        "color": "red"
+                      },
+                      "invalid": {
+                        "color": "red"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Angular"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "true": {
+                        "text": "ANGULAR",
+                        "color": "red"
+                      },
+                      "false": {
+                        "text": "React",
+                        "color": "green"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": true,
+          "reducer": [
+            "count"
+          ],
+          "fields": [
+            "Update Status"
+          ]
+        },
+        "sortBy": [
+          {
+            "displayName": "Has Update",
+            "desc": true
+          },
+          {
+            "displayName": "Update Status",
+            "desc": false
+          }
+        ]
+      }
+    },
+    {
+      "id": 40,
+      "type": "timeseries",
+      "title": "Plugin request rate (top 10)",
+      "description": "rate(grafana_plugin_request_total[5m]) per plugin_id over the selected window.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 46
+      },
+      "datasource": {
+        "uid": "${DS_PROMETHEUS}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "uid": "${DS_PROMETHEUS}",
+            "type": "prometheus"
+          },
+          "expr": "topk(10, sum by (plugin_id) (rate(grafana_plugin_request_total[5m])))",
+          "legendFormat": "{{plugin_id}}",
+          "range": true
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "no plugin requests in window",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 41,
+      "type": "timeseries",
+      "title": "Datasource request duration p95",
+      "description": "histogram_quantile(0.95) on grafana_datasource_request_duration_seconds_bucket per datasource.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 46
+      },
+      "datasource": {
+        "uid": "${DS_PROMETHEUS}",
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "uid": "${DS_PROMETHEUS}",
+            "type": "prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, datasource) (rate(grafana_datasource_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{datasource}}",
+          "range": true
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "no datasource queries in window",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 99,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**References & data sources**\n\n- **Local plugin inventory** \u2014 Grafana `/api/plugins?embedded=0` (provides `info.version`, `hasUpdate`, `signature`, `angularDetected`, `dependencies.grafanaDependency`)\n- **Marketplace** \u2014 `https://grafana.com/api/plugins` (provides `version` (latest), `orgName` (publisher), `downloads`, `popularity`)\n- **Runtime metrics** \u2014 Prometheus `grafana_plugin_request_total`, `grafana_datasource_request_duration_seconds_bucket`\n\n**Why some cells say _Bundled with Grafana_:** Built-in panels (alertlist, dashlist, \u2026) ship as part of Grafana core and don't expose a separate version, and built-in datasources are not in the public marketplace. The displayed string reflects that fact rather than leaving cells blank.\n\n**Why _Grafana Dependency_ may be `\u2014`:** It's read from the **local** plugin manifest (`dependencies.grafanaDependency`). If a plugin author didn't declare it, the field is empty \u2014 the marketplace LIST endpoint also doesn't expose it, only the per-plugin endpoint does."
+      }
+    }
+  ]
+}
