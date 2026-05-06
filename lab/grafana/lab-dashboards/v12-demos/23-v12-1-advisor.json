@@ -1,12 +1,12 @@
 {
   "uid": "v12-1-advisor",
   "title": "Grafana 12.1 — Grafana Advisor",
-  "description": "The Grafana Advisor (12.1) is a built-in health scanner that flags broken plugins, unhealthy data sources, OIDC misconfig, legacy dashboards, etc. This dashboard deep-links to the Advisor and surfaces the underlying health signals.",
+  "description": "The Grafana Advisor (12.1) is a built-in health scanner that flags broken plugins, unhealthy data sources, OIDC misconfig, legacy dashboards, etc. The Plugin Health panel joins the local /api/plugins inventory against the grafana.com marketplace to surface an Update Status (Updated / Not Updated / Not Available) and the plugin's declared Grafana Dependency.",
   "tags": ["grafana-12", "v12.1", "advisor", "v12-demo"],
   "schemaVersion": 40,
-  "version": 1,
+  "version": 2,
   "editable": true,
-  "refresh": "30s",
+  "refresh": "1m",
   "time": {"from": "now-15m", "to": "now"},
   "timepicker": {},
   "templating": {"list": [
@@ -16,28 +16,192 @@
     {
       "id": 1, "type": "text", "title": "",
       "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
-      "options": {"mode": "markdown", "content": "### Grafana Advisor (12.1)\n\n- **[➡ Open Advisor](/a/grafana-advisor-app)** — runs a fresh health pass and reports plugin / DS / SSO / dashboard issues.\n- Complements `detect-angular-dashboards` (used in `make audit` for the v12 upgrade).\n- Advisor checks fire only on demand — cheap, safe to run pre-change and post-change."}
+      "options": {"mode": "markdown", "content": "### Grafana Advisor (12.1)\n\n- **[➡ Open Advisor](/a/grafana-advisor-app)** — runs a fresh health pass and reports plugin / DS / SSO / dashboard issues.\n- Complements `detect-angular-dashboards` (used in `make audit` for the v12 upgrade).\n- The **Plugin Health** panel below joins local `/api/plugins` against the **grafana.com marketplace** so you can see which plugins have an update available before cutover.\n  - 🟢 **Updated** — installed version matches latest on grafana.com\n  - 🔴 **Not Updated** — newer version available on grafana.com\n  - 🟠 **Not Available** — plugin not in the public marketplace (private / internal build)\n- **Grafana Dependency** is read from the marketplace LIST endpoint where present; per-plugin endpoints are not iterated, so internal builds will show `Not Available`."}
     },
+
     {
-      "id": 2, "type": "table", "title": "Plugin health (feeds Advisor)",
-      "gridPos": {"h": 11, "w": 12, "x": 0, "y": 6},
-      "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "grafana_plugin_build_info", "instant": true, "format": "table"}],
+      "id": 2, "type": "table",
+      "title": "Plugin health (feeds Advisor)",
+      "description": "Joins local /api/plugins against grafana.com /api/plugins by plugin_id. Update Status is derived by the calculateField transformation (binary equality between Installed Version and Latest Version Available) and colored via field-override value mappings.",
+      "gridPos": {"h": 22, "w": 24, "x": 0, "y": 6},
+      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "targets": [
+        {
+          "refId": "LOCAL",
+          "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+          "type": "json",
+          "source": "url",
+          "url": "/api/plugins?embedded=0",
+          "url_options": {"method": "GET"},
+          "parser": "backend",
+          "root_selector": "",
+          "format": "table",
+          "columns": [
+            {"selector": "id",             "text": "plugin_id",         "type": "string"},
+            {"selector": "name",           "text": "name",              "type": "string"},
+            {"selector": "type",           "text": "plugin_type",       "type": "string"},
+            {"selector": "info.version",   "text": "installed_version", "type": "string"},
+            {"selector": "signatureType",  "text": "signature",         "type": "string"},
+            {"selector": "angularDetected","text": "angular",           "type": "boolean"}
+          ]
+        },
+        {
+          "refId": "MARKETPLACE",
+          "datasource": {"uid": "grafana-com", "type": "yesoreyeram-infinity-datasource"},
+          "type": "json",
+          "source": "url",
+          "url": "https://grafana.com/api/plugins?orderBy=name&direction=asc",
+          "url_options": {"method": "GET"},
+          "parser": "backend",
+          "root_selector": "items",
+          "format": "table",
+          "columns": [
+            {"selector": "slug",              "text": "plugin_id",          "type": "string"},
+            {"selector": "version",           "text": "latest_version",     "type": "string"},
+            {"selector": "grafanaDependency", "text": "grafana_dependency", "type": "string"}
+          ]
+        }
+      ],
       "transformations": [
-        {"id": "organize", "options": {"excludeByName": {"Time": true, "__name__": true, "Value": true, "instance": true, "job": true}, "renameByName": {"plugin_id": "Plugin", "plugin_type": "Type", "version": "Version", "signature_status": "Signature", "angular": "Angular"}}}
+        {
+          "id": "joinByField",
+          "options": {"byField": "plugin_id", "mode": "outer"}
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {"names": ["plugin_id", "name", "plugin_type", "installed_version", "latest_version", "grafana_dependency", "signature", "angular"]}
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "binary",
+            "binary": {
+              "left": "installed_version",
+              "operator": "==",
+              "right": "latest_version"
+            },
+            "alias": "match",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "plugin_id":          "Plugin",
+              "name":               "Name",
+              "plugin_type":        "Type",
+              "installed_version":  "Installed Version",
+              "latest_version":     "Latest Version Available",
+              "match":              "Update Status",
+              "grafana_dependency": "Grafana Dependency",
+              "signature":          "Signature",
+              "angular":            "Angular"
+            },
+            "indexByName": {
+              "plugin_id": 0, "name": 1, "plugin_type": 2,
+              "installed_version": 3, "latest_version": 4,
+              "match": 5, "grafana_dependency": 6,
+              "signature": 7, "angular": 8
+            }
+          }
+        }
       ],
       "fieldConfig": {
-        "defaults": {"custom": {"cellOptions": {"type": "auto"}, "filterable": true}},
+        "defaults": {
+          "custom": {
+            "cellOptions": {"type": "auto"},
+            "filterable": true,
+            "align": "auto"
+          }
+        },
         "overrides": [
-          {"matcher": {"id": "byName", "options": "Angular"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"true": {"text": "ANGULAR", "color": "red"}, "false": {"text": "React", "color": "green"}}}]}]},
-          {"matcher": {"id": "byName", "options": "Signature"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "mappings", "value": [{"type": "value", "options": {"valid": {"color": "green"}, "unsigned": {"color": "red"}}}]}]}
+          {
+            "matcher": {"id": "byName", "options": "Update Status"},
+            "properties": [
+              {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}},
+              {"id": "mappings", "value": [
+                {"type": "value",   "options": {"1":  {"color": "green",  "index": 0, "text": "Updated"}}},
+                {"type": "value",   "options": {"0":  {"color": "red",    "index": 1, "text": "Not Updated"}}},
+                {"type": "special", "options": {"match": "null+nan", "result": {"color": "orange", "index": 2, "text": "Not Available"}}}
+              ]},
+              {"id": "custom.width", "value": 140},
+              {"id": "noValue", "value": "Not Available"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Plugin"},
+            "properties": [{"id": "custom.width", "value": 260}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Name"},
+            "properties": [{"id": "custom.width", "value": 200}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Type"},
+            "properties": [{"id": "custom.width", "value": 90}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Installed Version"},
+            "properties": [{"id": "custom.width", "value": 130}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Latest Version Available"},
+            "properties": [{"id": "custom.width", "value": 160}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Grafana Dependency"},
+            "properties": [
+              {"id": "custom.width", "value": 180},
+              {"id": "noValue", "value": "Not Available"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Signature"},
+            "properties": [
+              {"id": "custom.cellOptions", "value": {"type": "color-background"}},
+              {"id": "mappings", "value": [
+                {"type": "value", "options": {
+                  "grafana":    {"color": "green"},
+                  "commercial": {"color": "green"},
+                  "community":  {"color": "blue"},
+                  "valid":      {"color": "green"},
+                  "internal":   {"color": "purple"},
+                  "unsigned":   {"color": "red"},
+                  "invalid":    {"color": "red"}
+                }}
+              ]},
+              {"id": "custom.width", "value": 110}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Angular"},
+            "properties": [
+              {"id": "custom.cellOptions", "value": {"type": "color-background"}},
+              {"id": "mappings", "value": [
+                {"type": "value", "options": {
+                  "true":  {"text": "ANGULAR", "color": "red"},
+                  "false": {"text": "React",   "color": "green"}
+                }}
+              ]},
+              {"id": "custom.width", "value": 100}
+            ]
+          }
         ]
       },
-      "options": {"showHeader": true, "cellHeight": "sm"}
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {"show": true, "reducer": ["count"], "fields": ["Update Status"]},
+        "sortBy": [{"displayName": "Update Status", "desc": false}]
+      }
     },
+
     {
       "id": 3, "type": "stat", "title": "Data sources configured",
-      "gridPos": {"h": 5, "w": 12, "x": 12, "y": 6},
+      "gridPos": {"h": 5, "w": 12, "x": 0, "y": 28},
       "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
       "targets": [{"refId": "A", "expr": "grafana_datasource_request_duration_seconds_count", "instant": true, "format": "table"}],
       "transformations": [{"id": "reduce", "options": {"reducers": ["count"], "labelsToFields": false}}],
@@ -46,7 +210,7 @@
     },
     {
       "id": 4, "type": "stat", "title": "Plugins with load errors (Advisor: BLOCKER)",
-      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 11},
+      "gridPos": {"h": 5, "w": 12, "x": 12, "y": 28},
       "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
       "targets": [{"refId": "A", "expr": "sum(grafana_plugin_load_errors) or on() vector(0)"}],
       "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"},
