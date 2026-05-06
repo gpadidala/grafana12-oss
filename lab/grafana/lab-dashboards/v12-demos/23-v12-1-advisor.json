@@ -4,13 +4,38 @@
   "description": "Enterprise-grade health & inventory dashboard for the v12.1 Grafana Advisor. KPIs (totals by category, signature, Angular), distribution charts, full plugin inventory with marketplace cross-reference (installed vs latest, publisher, downloads, update flag), and plugin runtime activity (request rate + datasource latency).",
   "tags": ["grafana-12", "v12.1", "advisor", "plugin-health", "v12-demo"],
   "schemaVersion": 40,
-  "version": 6,
+  "version": 7,
   "editable": true,
   "refresh": "1m",
   "time": {"from": "now-1h", "to": "now"},
   "timepicker": {},
   "templating": {"list": [
-    {"name": "ds_prom", "type": "datasource", "query": "prometheus", "refresh": 1, "current": {"text": "Prometheus", "value": "prom"}}
+    {
+      "name": "ds_prom",
+      "label": "Prometheus",
+      "type": "datasource",
+      "query": "prometheus",
+      "refresh": 1,
+      "hide": 0
+    },
+    {
+      "name": "ds_grafana_api",
+      "label": "Grafana API (Infinity)",
+      "description": "Infinity datasource pointing at this Grafana's own /api/plugins endpoint. Configure with allowedHosts including your Grafana base URL.",
+      "type": "datasource",
+      "query": "yesoreyeram-infinity-datasource",
+      "refresh": 1,
+      "hide": 0
+    },
+    {
+      "name": "ds_grafana_com",
+      "label": "grafana.com Marketplace (Infinity)",
+      "description": "Infinity datasource pointing at https://grafana.com/api/plugins (no auth). Configure with allowedHosts including https://grafana.com.",
+      "type": "datasource",
+      "query": "yesoreyeram-infinity-datasource",
+      "refresh": 1,
+      "hide": 0
+    }
   ]},
   "panels": [
 
@@ -23,7 +48,7 @@
     {
       "id": 10, "type": "stat", "title": "Total plugins",
       "gridPos": {"h": 5, "w": 4, "x": 0, "y": 4},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
@@ -37,7 +62,7 @@
     {
       "id": 11, "type": "stat", "title": "Data sources",
       "gridPos": {"h": 5, "w": 4, "x": 4, "y": 4},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0&type=datasource", "url_options": {"method": "GET"},
@@ -51,7 +76,7 @@
     {
       "id": 12, "type": "stat", "title": "Panels",
       "gridPos": {"h": 5, "w": 4, "x": 8, "y": 4},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0&type=panel", "url_options": {"method": "GET"},
@@ -65,7 +90,7 @@
     {
       "id": 13, "type": "stat", "title": "Apps",
       "gridPos": {"h": 5, "w": 4, "x": 12, "y": 4},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0&type=app", "url_options": {"method": "GET"},
@@ -80,7 +105,7 @@
       "id": 14, "type": "stat", "title": "Signed (valid)",
       "description": "Plugins where signature=valid (cryptographically signed external plugins). Internal/unsigned excluded.",
       "gridPos": {"h": 5, "w": 4, "x": 16, "y": 4},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
@@ -103,7 +128,7 @@
       "id": 15, "type": "stat", "title": "Angular detected",
       "description": "Plugins flagged angularDetected=true. Critical for v12 migration — Angular support removed in 12.0.",
       "gridPos": {"h": 5, "w": 4, "x": 20, "y": 4},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
@@ -127,7 +152,7 @@
       "id": 20, "type": "stat", "title": "Updates available",
       "description": "Plugins where Grafana's background update check (hasUpdate) is true.",
       "gridPos": {"h": 5, "w": 6, "x": 0, "y": 9},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
@@ -150,7 +175,7 @@
       "id": 21, "type": "stat", "title": "Plugin load errors (Advisor: BLOCKER)",
       "gridPos": {"h": 5, "w": 6, "x": 6, "y": 9},
       "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "sum(grafana_plugin_load_errors) or on() vector(0)"}],
+      "targets": [{"refId": "A", "datasource": {"uid": "${ds_prom}", "type": "prometheus"}, "expr": "sum(grafana_plugin_load_errors) or on() vector(0)"}],
       "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"},
       "fieldConfig": {"defaults": {"noValue": "0", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "color": {"mode": "thresholds"}}, "overrides": []}
     },
@@ -158,7 +183,7 @@
       "id": 22, "type": "stat", "title": "Bundled with Grafana",
       "description": "Plugins where signature=internal (built-in panels and datasources).",
       "gridPos": {"h": 5, "w": 6, "x": 12, "y": 9},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
@@ -181,7 +206,7 @@
       "id": 23, "type": "stat", "title": "External plugins",
       "description": "Plugins NOT signed as 'internal' (third-party / Grafana Labs add-ons / community).",
       "gridPos": {"h": 5, "w": 6, "x": 18, "y": 9},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
@@ -204,7 +229,7 @@
     {
       "id": 30, "type": "bargauge", "title": "Plugins by Type",
       "gridPos": {"h": 8, "w": 8, "x": 0, "y": 14},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
@@ -226,7 +251,7 @@
     {
       "id": 31, "type": "bargauge", "title": "Plugins by Signature",
       "gridPos": {"h": 8, "w": 8, "x": 8, "y": 14},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
@@ -249,7 +274,7 @@
       "id": 32, "type": "piechart", "title": "Update availability (hasUpdate)",
       "description": "Distribution of Grafana's own hasUpdate flag across all installed plugins.",
       "gridPos": {"h": 8, "w": 8, "x": 16, "y": 14},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
       "targets": [{
         "refId": "A", "type": "json", "source": "url",
         "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
@@ -281,7 +306,7 @@
       "targets": [
         {
           "refId": "LOCAL",
-          "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+          "datasource": {"uid": "${ds_grafana_api}", "type": "yesoreyeram-infinity-datasource"},
           "type": "json", "source": "url",
           "url": "/api/plugins?embedded=0", "url_options": {"method": "GET"},
           "parser": "backend", "root_selector": "", "format": "table",
@@ -300,7 +325,7 @@
         },
         {
           "refId": "MARKETPLACE",
-          "datasource": {"uid": "grafana-com", "type": "yesoreyeram-infinity-datasource"},
+          "datasource": {"uid": "${ds_grafana_com}", "type": "yesoreyeram-infinity-datasource"},
           "type": "json", "source": "url",
           "url": "https://grafana.com/api/plugins?orderBy=name&direction=asc",
           "url_options": {"method": "GET"},
@@ -452,7 +477,7 @@
       "description": "rate(grafana_plugin_request_total[5m]) per plugin_id over the selected window.",
       "gridPos": {"h": 8, "w": 12, "x": 0, "y": 46},
       "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "topk(10, sum by (plugin_id) (rate(grafana_plugin_request_total[5m])))", "legendFormat": "{{plugin_id}}"}],
+      "targets": [{"refId": "A", "datasource": {"uid": "${ds_prom}", "type": "prometheus"}, "expr": "topk(10, sum by (plugin_id) (rate(grafana_plugin_request_total[5m])))", "legendFormat": "{{plugin_id}}", "range": true}],
       "options": {"legend": {"displayMode": "table", "placement": "right", "values": ["lastNotNull", "max"]}, "tooltip": {"mode": "multi"}},
       "fieldConfig": {"defaults": {"unit": "ops", "noValue": "no plugin requests in window", "custom": {"drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth"}}, "overrides": []}
     },
@@ -461,7 +486,7 @@
       "description": "histogram_quantile(0.95) on grafana_datasource_request_duration_seconds_bucket per datasource.",
       "gridPos": {"h": 8, "w": 12, "x": 12, "y": 46},
       "datasource": {"uid": "${ds_prom}", "type": "prometheus"},
-      "targets": [{"refId": "A", "expr": "histogram_quantile(0.95, sum by (le, datasource) (rate(grafana_datasource_request_duration_seconds_bucket[5m])))", "legendFormat": "{{datasource}}"}],
+      "targets": [{"refId": "A", "datasource": {"uid": "${ds_prom}", "type": "prometheus"}, "expr": "histogram_quantile(0.95, sum by (le, datasource) (rate(grafana_datasource_request_duration_seconds_bucket[5m])))", "legendFormat": "{{datasource}}", "range": true}],
       "options": {"legend": {"displayMode": "table", "placement": "right", "values": ["lastNotNull", "max"]}, "tooltip": {"mode": "multi"}},
       "fieldConfig": {"defaults": {"unit": "s", "noValue": "no datasource queries in window", "custom": {"drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth"}}, "overrides": []}
     },
