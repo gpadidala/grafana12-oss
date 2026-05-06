@@ -24,7 +24,7 @@
       "title": "Plugin health (feeds Advisor)",
       "description": "Joins local /api/plugins against grafana.com /api/plugins by plugin_id. Update Status is derived by the calculateField transformation (binary equality between Installed Version and Latest Version Available) and colored via field-override value mappings.",
       "gridPos": {"h": 22, "w": 24, "x": 0, "y": 6},
-      "datasource": {"uid": "grafana-api", "type": "yesoreyeram-infinity-datasource"},
+      "datasource": {"uid": "-- Mixed --", "type": "datasource"},
       "targets": [
         {
           "refId": "LOCAL",
